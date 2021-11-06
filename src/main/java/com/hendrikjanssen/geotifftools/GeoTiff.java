@@ -15,64 +15,88 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.plugins.tiff.TIFFDirectory;
+import javax.imageio.plugins.tiff.TIFFField;
+import javax.imageio.stream.ImageInputStream;
 
-public class GeoTiff {
+public class GeoTiff implements AutoCloseable {
 
-    private static final int GeoKeyShortLocation = 0;
+    private static final int GeoKeyShortLocation = 34735;
     private static final int GeoKeyDoubleLocation = 34736;
     private static final int GeoKeyAsciiLocation = 34737;
 
     private final GeoKey[] geoKeys;
 
+    private final ImageInputStream imageInputStream;
+    private final ImageReader imageReader;
+
     public GeoTiff(InputStream inputStream) throws IOException {
-        ImageReader imageReader = ImageIO.getImageReadersByFormatName("tiff").next();
 
-        imageReader.setInput(ImageIO.createImageInputStream(inputStream), true);
-        IIOMetadata metadata = imageReader.getImageMetadata(0);
+        this.imageInputStream = ImageIO.createImageInputStream(inputStream);
 
-        TIFFDirectory tiffDirectory = TIFFDirectory.createFromMetadata(metadata);
+        this.imageReader = initializeImageReader(imageInputStream);
 
-        var geoKeyDirectoryField = tiffDirectory.getTIFFField(34735);
-        var geoDoubleParamsField = tiffDirectory.getTIFFField(34736);
-        var geoAsciiParamsField = tiffDirectory.getTIFFField(34737);
+        TIFFDirectory tiffDirectory = readTiffTags(this.imageReader);
 
-        this.geoKeys = readGeoKeyData(
-            geoKeyDirectoryField.getAsInts(),
-            geoDoubleParamsField.getAsDoubles(),
-            geoAsciiParamsField.getAsString(0)
-        );
+        this.geoKeys = readGeoKeyData(tiffDirectory);
     }
 
-    private GeoKey[] readGeoKeyData(int[] geoKeyDirectory, double[] geoDoubleParams, String geoAsciiParams) {
+    private ImageReader initializeImageReader(ImageInputStream imageInputStream) {
+
+        ImageReader imageReader = ImageIO.getImageReadersByFormatName("tiff").next();
+        imageReader.setInput(imageInputStream, false, false);
+        return imageReader;
+    }
+
+    private TIFFDirectory readTiffTags(ImageReader imageReader) throws IOException {
+
+        IIOMetadata metadata = imageReader.getImageMetadata(0);
+        return TIFFDirectory.createFromMetadata(metadata);
+    }
+
+    private GeoKey[] readGeoKeyData(TIFFDirectory tiffDirectory) {
+
+        int[] geoKeyDirectoryData = tiffDirectory.getTIFFField(GeoKeyShortLocation).getAsInts();
+        double[] geoDoubleParamsData = tiffDirectory.getTIFFField(GeoKeyDoubleLocation).getAsDoubles();
+
+        String geoAsciiParamsData = "";
+        TIFFField geoAsciiField = tiffDirectory.getTIFFField(GeoKeyAsciiLocation);
+        if (geoAsciiField != null) {
+            geoAsciiParamsData = geoAsciiField.getAsString(0);
+        }
 
         // header parsing
-        int geoKeysNum = geoKeyDirectory[3];
+        int geoKeysNum = geoKeyDirectoryData[3];
 
         GeoKey[] parsedKeys = new GeoKey[geoKeysNum];
 
         int i = 4;
         int currentKeyIndex = 0;
-        while (i < geoKeyDirectory.length) {
+        while (i < geoKeyDirectoryData.length) {
 
-            int geoKeyId = geoKeyDirectory[i];
-            int tiffTagLocation = geoKeyDirectory[i + 1];
-            int valueCount = geoKeyDirectory[i + 2];
-            int valueOffset = geoKeyDirectory[i + 3];
+            int geoKeyId = geoKeyDirectoryData[i];
+            int tiffTagLocation = geoKeyDirectoryData[i + 1];
+            int valueCount = geoKeyDirectoryData[i + 2];
+            int valueOffset = geoKeyDirectoryData[i + 3];
 
             switch (tiffTagLocation) {
-                case GeoKeyShortLocation:
+                case 0:
                     // This implies the value offset is the actual key value
                     parsedKeys[currentKeyIndex] = new GeoKey(geoKeyId, valueOffset);
+
                     currentKeyIndex++;
                     break;
+
                 case GeoKeyDoubleLocation:
-                    double[] values = Arrays.copyOfRange(geoDoubleParams, valueOffset, valueOffset + valueCount);
+                    double[] values = Arrays.copyOfRange(geoDoubleParamsData, valueOffset, valueOffset + valueCount);
                     parsedKeys[currentKeyIndex] = new GeoKey(geoKeyId, values);
+
                     currentKeyIndex++;
                     break;
+
                 case GeoKeyAsciiLocation:
-                    String data = geoAsciiParams.substring(valueOffset, valueOffset + valueCount - 1);
-                    parsedKeys[currentKeyIndex] = new GeoKey(geoKeyId, data);
+                    String value = geoAsciiParamsData.substring(valueOffset, valueOffset + valueCount - 1);
+                    parsedKeys[currentKeyIndex] = new GeoKey(geoKeyId, value);
+
                     currentKeyIndex++;
                     break;
             }
@@ -132,5 +156,14 @@ public class GeoTiff {
             default:
                 return Optional.empty();
         }
+    }
+
+    @Override
+    public void close() throws Exception {
+        this.imageInputStream.flush();
+        this.imageInputStream.close();
+
+        this.imageReader.setInput(null);
+        this.imageReader.dispose();
     }
 }

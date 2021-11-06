@@ -22,17 +22,17 @@ $: ./gradlew.bat build
 $: ./gradlew build
 ```
 
-The library JAR file will be placed under the `build/libs` directory. It can then be included on your classpath fo usage.
+The library JAR file will be placed under the `build/libs` directory. It can then be included on your classpath for usage.
 
 ### Reading a GeoKey
 
 ```java
-GeoTiff geoTiff = new GeoTiff(new File("path/to/your/geotiff/file"))
+GeoTiff geoTiff = new GeoTiff(new File("path/to/your/geotiff/file").getInputStream())
 
-GeoKeyShort keyData = geoTiff.getGeoKey<GeoKeyShort>(GeoKeyId.GTModelType);
+Optional<GeoKey> keyData = geoTiff.getGeoKey(GeoKeyId.GTModelType);
 
 assert keyData.isPresent()
-assert keyData.get().getValue() == ModelType.Projected.getCode();
+assert keyData.get().getValueAsInt() == ModelType.Projected.getCode();
 ```
 
 ## License

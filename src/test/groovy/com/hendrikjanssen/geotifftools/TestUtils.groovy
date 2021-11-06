@@ -1,23 +1,17 @@
 package com.hendrikjanssen.geotifftools
 
-
-import com.hendrikjanssen.geotifftools.geokeys.GeoKeyDoubleArray
-import com.hendrikjanssen.geotifftools.geokeys.GeoKeyId
-import com.hendrikjanssen.geotifftools.geokeys.GeoKeyShort
-import com.hendrikjanssen.geotifftools.geokeys.GeoKeyString
-
 class TestUtils {
 
-  static boolean geoKeyHasProperty(GeoTiff geoTiff, GeoKeyId id, int property) {
-    return (geoTiff.getGeoKey(id).get() as GeoKeyShort).value == property
+  static boolean geoKeyHasProperty(GeoTiff geoTiff, int id, int property) {
+    return geoTiff.getGeoKey(id).get().getValueAsInt() == property
   }
 
-  static boolean geoKeyHasProperty(GeoTiff geoTiff, GeoKeyId id, double ... properties) {
-    return (geoTiff.getGeoKey(id).get() as GeoKeyDoubleArray).values == properties
+  static boolean geoKeyHasProperty(GeoTiff geoTiff, int id, double ... properties) {
+    return geoTiff.getGeoKey(id).get().getValueAsDoubles() == properties
   }
 
-  static boolean geoKeyHasProperty(GeoTiff geoTiff, GeoKeyId id, String property) {
-    return (geoTiff.getGeoKey(id).get() as GeoKeyString).value == property
+  static boolean geoKeyHasProperty(GeoTiff geoTiff, int id, String property) {
+    return geoTiff.getGeoKey(id).get().getValueAsString() == property
   }
 
   static void printKeys(GeoTiff tiff) {

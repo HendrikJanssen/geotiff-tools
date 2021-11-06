@@ -1,25 +1,49 @@
 package com.hendrikjanssen.geotifftools.geokeys;
 
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Objects;
 
-public abstract class GeoKey implements Comparable<GeoKey> {
+public class GeoKey implements Comparable<GeoKey> {
 
     public static final Comparator<GeoKey> COMPARATOR = Comparator.nullsLast(GeoKey::compareTo);
 
-    private final GeoKeyId id;
+    private final int id;
 
-    public GeoKey(GeoKeyId id) {
+    private final Object value;
+
+    public GeoKey(int id, Object value) {
         this.id = id;
+        this.value = value;
     }
 
-    public GeoKeyId getId() {
+    public int getId() {
         return id;
+    }
+
+    public int getValueAsInt() {
+        return (int) value;
+    }
+
+    public int[] getValueAsInts() {
+        return (int[]) value;
+    }
+
+    public double getValueAsDouble() {
+        return (double) value;
+    }
+
+    public double[] getValueAsDoubles() {
+        return (double[]) value;
+    }
+
+    public String getValueAsString() {
+        return (String) value;
     }
 
     @Override
     public int compareTo(GeoKey o) {
-        return this.id.getId() - o.getId().getId();
+        return this.id - o.getId();
     }
 
     @Override
@@ -37,8 +61,25 @@ public abstract class GeoKey implements Comparable<GeoKey> {
 
     @Override
     public String toString() {
-        return "GeoKey{" +
-               "id=" + id +
-               '}';
+        StringBuilder sb = new StringBuilder("GeoKey{");
+
+        sb.append("id=");
+        sb.append(id);
+        sb.append(", value=");
+
+        if (value instanceof String) {
+            sb.append('"');
+            sb.append(value);
+            sb.append('"');
+        } else if (value instanceof Integer || value instanceof Double) {
+            sb.append(value);
+        } else if (value instanceof int[]) {
+            sb.append(Arrays.toString((int[]) value));
+        } else if (value instanceof double[]) {
+            sb.append(Arrays.toString((double[]) value));
+        }
+
+        sb.append('}');
+        return sb.toString();
     }
 }

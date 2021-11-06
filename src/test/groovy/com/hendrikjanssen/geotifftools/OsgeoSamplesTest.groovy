@@ -1,9 +1,7 @@
 package com.hendrikjanssen.geotifftools
 
-
 import com.hendrikjanssen.geotifftools.geokeys.GeoKeyId
 import com.hendrikjanssen.geotifftools.geokeys.values.AngularUnit
-import com.hendrikjanssen.geotifftools.geokeys.values.GeographicCs
 import com.hendrikjanssen.geotifftools.geokeys.values.LinearUnit
 import com.hendrikjanssen.geotifftools.geokeys.values.ModelType
 import com.hendrikjanssen.geotifftools.geokeys.values.RasterType
@@ -25,7 +23,7 @@ class OsgeoSamplesTest extends Specification {
       TestUtils.geoKeyHasProperty(result, GeoKeyId.GTModelType, ModelType.Projected.code())
       TestUtils.geoKeyHasProperty(result, GeoKeyId.GTRasterType, RasterType.PixelIsArea.code())
       TestUtils.geoKeyHasProperty(result, GeoKeyId.GTCitation, "unnamed")
-      TestUtils.geoKeyHasProperty(result, GeoKeyId.GeographicType, GeographicCs.GCS_NAD27.code())
+      TestUtils.geoKeyHasProperty(result, GeoKeyId.GeographicType, 4267)
       TestUtils.geoKeyHasProperty(result, GeoKeyId.GeogCitation, "NAD27")
       TestUtils.geoKeyHasProperty(result, GeoKeyId.GeogAngularUnits, AngularUnit.Degree.code())
 

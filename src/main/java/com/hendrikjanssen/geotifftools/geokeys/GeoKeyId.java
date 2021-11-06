@@ -1,54 +1,22 @@
 package com.hendrikjanssen.geotifftools.geokeys;
 
-import com.hendrikjanssen.geotifftools.geokeys.values.GeographicCs;
-import com.hendrikjanssen.geotifftools.geokeys.values.LinearUnit;
-import com.hendrikjanssen.geotifftools.geokeys.values.ModelType;
-import com.hendrikjanssen.geotifftools.geokeys.values.RasterType;
+public class GeoKeyId {
 
-import java.util.HashMap;
-import java.util.Map;
-
-public enum GeoKeyId {
-
-    GTModelType(1024, ModelType.class),
-    GTRasterType(1025, RasterType.class),
-    GTCitation(1026, null),
-    GeographicType(2048, GeographicCs.class),
-    GeogCitation(2049, null),
-    GeogAngularUnits(2054, null),
-    GeogAngularUnitSize(2055, null),
-    ProjectedCSType(3072, null),
-    Projection(3074, null),
-    ProjCoordTrans(3075, null),
-    ProjLinearUnits(3076, LinearUnit.class),
-    ProjStdParallel1(3078, null),
-    ProjStdParallel2(3079, null),
-    ProjNatOriginLong(3080, null),
-    ProjNatOriginLat(3081, null),
-    ProjFalseEasting(3082, null),
-    ProjFalseNorthing(3083, null);
-
-    private final int id;
-    private final Class<? extends Enum<?>> valueRepresentation;
-
-    GeoKeyId(int id, Class<? extends Enum<?>> valueRepresentation) {
-        this.id = id;
-        this.valueRepresentation = valueRepresentation;
-    }
-
-    public int getId() {
-        return this.id;
-    }
-
-    private static final Map<Integer, GeoKeyId> idMapping = new HashMap<>();
-
-    static {
-        for (GeoKeyId fieldTag : GeoKeyId.values()) {
-            idMapping.put(fieldTag.getId(), fieldTag);
-        }
-    }
-
-    public static GeoKeyId getById(int id) {
-        return idMapping.get(id);
-    }
+    public static final int GTModelType = 1024;
+    public static final int GTRasterType = 1025;
+    public static final int GTCitation = 1026;
+    public static final int GeographicType = 2048;
+    public static final int GeogCitation = 2049;
+    public static final int GeogAngularUnits = 2054;
+    public static final int GeogAngularUnitSize = 2055;
+    public static final int ProjectedCSType = 3072;
+    public static final int Projection = 3074;
+    public static final int ProjCoordTrans = 3075;
+    public static final int ProjLinearUnits = 3076;
+    public static final int ProjStdParallel1 = 3078;
+    public static final int ProjStdParallel2 = 3079;
+    public static final int ProjNatOriginLong = 3080;
+    public static final int ProjNatOriginLat = 3081;
+    public static final int ProjFalseEasting = 3082;
+    public static final int ProjFalseNorthing = 3083;
 }

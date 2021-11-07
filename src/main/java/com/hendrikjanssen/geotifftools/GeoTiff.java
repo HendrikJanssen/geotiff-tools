@@ -56,7 +56,12 @@ public class GeoTiff implements AutoCloseable {
     private GeoKey[] readGeoKeyData(TIFFDirectory tiffDirectory) {
 
         int[] geoKeyDirectoryData = tiffDirectory.getTIFFField(GeoKeyShortLocation).getAsInts();
-        double[] geoDoubleParamsData = tiffDirectory.getTIFFField(GeoKeyDoubleLocation).getAsDoubles();
+
+        double[] geoDoubleParamsData = new double[1];
+        TIFFField gGeoKeyDoubleField = tiffDirectory.getTIFFField(GeoKeyDoubleLocation);
+        if (gGeoKeyDoubleField != null) {
+            geoDoubleParamsData = gGeoKeyDoubleField.getAsDoubles();
+        }
 
         String geoAsciiParamsData = "";
         TIFFField geoAsciiField = tiffDirectory.getTIFFField(GeoKeyAsciiLocation);
@@ -134,7 +139,7 @@ public class GeoTiff implements AutoCloseable {
             .orElse(ModelType.Unknown);
     }
 
-    public Optional<CoordinateReferenceSystem<?>> getCoordinateReferenceSystem() {
+    public Optional<? extends CoordinateReferenceSystem<?>> getCoordinateReferenceSystem() {
 
         ModelType modelType = this.getModelType();
 
@@ -146,7 +151,11 @@ public class GeoTiff implements AutoCloseable {
                     .map(GeoKey::getValueAsInt)
                     // These are known EPSG codes, everything above or below are user-defined or obsolete codes
                     .filter(projectedCrsId -> projectedCrsId >= 20000 && projectedCrsId <= 32760)
-                    .map(CrsRegistry::getProjectedCoordinateReferenceSystemForEPSG);
+                    .map(CrsRegistry::getProjectedCoordinateReferenceSystemForEPSG)
+                    .or(() -> this.getGeoKey(GeoKeyId.Projection)
+                        .map(GeoKey::getValueAsInt)
+                        .filter(projectedCrsId -> projectedCrsId >= 10000 && projectedCrsId <= 19999)
+                        .map(CrsRegistry::getProjectedCoordinateReferenceSystemForEPSG));
             case Geographic:
                 this.getGeoKey(GeoKeyId.GeographicType)
                     .map(GeoKey::getValueAsInt)

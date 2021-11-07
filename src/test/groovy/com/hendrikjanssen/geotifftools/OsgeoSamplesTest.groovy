@@ -59,4 +59,33 @@ class OsgeoSamplesTest extends Specification {
       TestUtils.geoKeyHasProperty(result, GeoKeyId.GeogAngularUnits, AngularUnit.Degree.code())
       TestUtils.geoKeyHasProperty(result, GeoKeyId.GeogEllipsoid, Ellipsoid.Bessel_1841.code())
   }
+
+  def 'should parse osgeo sample "intergraph - utm" correctly'() {
+    given:
+      def osgeoSample = this.class.getResourceAsStream("osgeo-samples/intergraph/utm.tif")
+
+    when:
+      def result = new GeoTiff(osgeoSample as InputStream)
+
+    then:
+      noExceptionThrown()
+
+    and:
+      TestUtils.geoKeyHasProperty(result, GeoKeyId.GTModelType, ModelType.Projected.code())
+      TestUtils.geoKeyHasProperty(result, GeoKeyId.GTRasterType, RasterType.PixelIsArea.code())
+
+      TestUtils.geoKeyHasProperty(result, GeoKeyId.ProjCoordTrans, 32767)
+      TestUtils.geoKeyHasProperty(result, GeoKeyId.Projection, 16016)
+
+      TestUtils.geoKeyHasProperty(result, GeoKeyId.GeogGeodeticDatum, 6267)
+      TestUtils.geoKeyHasProperty(result, GeoKeyId.GeogEllipsoid, Ellipsoid.Clarke_1866.code())
+      TestUtils.geoKeyHasProperty(result, GeoKeyId.ProjNatOriginLong, -87d)
+      TestUtils.geoKeyHasProperty(result, GeoKeyId.ProjNatOriginLat, 0d)
+      TestUtils.geoKeyHasProperty(result, GeoKeyId.ProjFalseEasting, 500000d)
+      TestUtils.geoKeyHasProperty(result, GeoKeyId.ProjFalseNorthing, 0d)
+      TestUtils.geoKeyHasProperty(result, GeoKeyId.ProjScaleAtNatOrigin, 0.9996d)
+      TestUtils.geoKeyHasProperty(result, GeoKeyId.PCSCitation, "Universal Transverse Mercator North American 1927 Zone Number 16N")
+      TestUtils.geoKeyHasProperty(result, GeoKeyId.ProjectedCSType, 32767)
+      TestUtils.geoKeyHasProperty(result, GeoKeyId.ProjLinearUnits, LinearUnit.Meter.code())
+  }
 }

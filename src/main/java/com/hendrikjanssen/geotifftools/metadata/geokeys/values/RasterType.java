@@ -1,4 +1,4 @@
-package com.hendrikjanssen.geotifftools.geokeys.values;
+package com.hendrikjanssen.geotifftools.metadata.geokeys.values;
 
 public enum RasterType {
     PixelIsArea(1),

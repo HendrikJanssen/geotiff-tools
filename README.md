@@ -59,7 +59,7 @@ assert key.get().getValueAsInt() == ModelType.Projected.getCode();
 Tiepoints are accessible via the `getModelTiepoints()` method.
 
 ```java
-Optional<List<ModelTiepoint>> tipoints = metadata.getModelTiepoints();
+Optional<List<ModelTiepoint>>tiepoints=metadata.getModelTiepoints();
 ```
 
 ### Reading the CoordinateReferenceSystem (CRS)
@@ -69,21 +69,36 @@ You can access high-level information provided as [Geolatte](https://github.com/
 **Note that currently, only standard EPSG CRS are supported, no user-defined CRS and no CRS from other authorities!**
 
 ```java
-Optional<? extends CoordinateReferenceSystem<? extends Position>> crs = geoTiff.getCoordinateReferenceSystem();
+Optional<?extends CoordinateReferenceSystem<? extends Position>> crs=geoTiff.getCoordinateReferenceSystem();
 
-assert crs.isPresent();
-assert crs.get().getName().equals("WGS 84 / UTM zone 31N");
+    assert crs.isPresent();
+    assert crs.get().getName().equals("WGS 84 / UTM zone 31N");
 ```
 
-### Getting the BoundingBox (Envelope)
+### Getting the coordinates of a raster point
 
-You can get the `Envelope<P>` by using the `Optional<Envelope<P>> getEnvelope()` method on the `GeoTiff` class. The method
-is generic, so you need to know the projection beforehand. For finding the projection type, use the `getModelType()` method on the `GeoTiff` class.
+The library lets you get the real-world coordinates of a raster point. Use
+the `Optional<P> transformRasterPointToModelPoint(int rasterX, int rasterY)`
+method on the `GeoTiff` class for that.
 
 **Note that currently, only georeferencing via ModelTiepoints and ModelPixelScale is supported!**
 
 ```java
-ModelType modelType = geoTiff.getModelType();
+Optional<G2D> point=geoTiff.transformRasterPointToModelPoint(50,50);
+
+    assert point.isPresent();
+    assert point.get().equals(new G2D(6.783922,51.232683));
+```
+
+### Getting the BoundingBox (Envelope)
+
+You can get the `Envelope<P>` by using the `Optional<Envelope<P>> getEnvelope()` method on the `GeoTiff` class. The method is generic, so
+you need to know the projection beforehand. For finding the projection type, use the `getModelType()` method on the `GeoTiff` class.
+
+**Note that currently, only georeferencing via ModelTiepoints and ModelPixelScale is supported!**
+
+```java
+ModelType modelType=geoTiff.getModelType();
 
 Optional<Envelope<? extends Position>> envelope;
 

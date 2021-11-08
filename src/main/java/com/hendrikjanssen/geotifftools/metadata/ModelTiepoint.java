@@ -48,23 +48,27 @@ public class ModelTiepoint {
 
     @Override
     public String toString() {
-        return "ModelTiepoint{" +
-               "i=" + i +
-               ", j=" + j +
-               ", k=" + k +
-               ", x=" + x +
-               ", y=" + y +
-               ", z=" + z +
-               '}';
+        return "ModelTiepoint{" + "i=" + i + ", j=" + j + ", k=" + k + ", x=" + x + ", y=" + y + ", z=" + z + '}';
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
         ModelTiepoint that = (ModelTiepoint) o;
-        return i == that.i && j == that.j && k == that.k && Double.compare(that.x, x) == 0 && Double.compare(that.y,
-            y) == 0 && Double.compare(that.z, z) == 0;
+
+        return i == that.i
+               && j == that.j
+               && k == that.k
+               && Double.compare(that.x, x) == 0
+               && Double.compare(that.y, y) == 0
+               && Double.compare(that.z, z) == 0;
     }
 
     @Override

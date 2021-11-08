@@ -124,6 +124,10 @@ public class GeoTiffMetadata {
 
                     currentKeyIndex++;
                     break;
+                default:
+                    // Broken GeoKey?
+                    i += 4;
+                    continue;
             }
 
             i += 4;

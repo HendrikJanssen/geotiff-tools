@@ -71,6 +71,30 @@ public class GeoTiff implements AutoCloseable {
     }
 
     @SuppressWarnings("unchecked")
+    public <P extends Position> Optional<P> transformRasterPointToModelPoint(int rasterX, int rasterY) {
+        ModelType modelType = this.getModelType();
+
+        if (modelType == ModelType.Unknown || modelType == ModelType.Geocentric) {
+            return Optional.empty();
+        }
+
+        Optional<? extends CoordinateReferenceSystem<P>> crs = (Optional<? extends CoordinateReferenceSystem<P>>) this.getCoordinateReferenceSystem();
+        Optional<ModelPixelScale> pixelScale = this.metaData.getModelPixelScale();
+        Optional<List<ModelTiepoint>> modelTiepoints = this.metaData.getModelTiepoints();
+
+        if (crs.isEmpty() || pixelScale.isEmpty() || modelTiepoints.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return Optional.of(MathUtils.transformRasterPointToModelPoint(
+            crs.get(),
+            new Point(rasterX, rasterY),
+            modelTiepoints.get().get(0),
+            pixelScale.get()
+        ));
+    }
+
+    @SuppressWarnings("unchecked")
     public <P extends Position> Optional<Envelope<P>> getEnvelope() {
 
         ModelType modelType = this.getModelType();
@@ -80,33 +104,36 @@ public class GeoTiff implements AutoCloseable {
         }
 
         Optional<? extends CoordinateReferenceSystem<P>> crs = (Optional<? extends CoordinateReferenceSystem<P>>) this.getCoordinateReferenceSystem();
-
-        if (crs.isEmpty()) {
-            return Optional.empty();
-        }
-
         Optional<ModelPixelScale> pixelScale = this.metaData.getModelPixelScale();
         Optional<List<ModelTiepoint>> modelTiepoints = this.metaData.getModelTiepoints();
 
-        if (pixelScale.isEmpty() || modelTiepoints.isEmpty()) {
+        if (crs.isEmpty() || pixelScale.isEmpty() || modelTiepoints.isEmpty()) {
             return Optional.empty();
         }
 
+        return Optional.of(this.buildEnvelope(crs.get(), modelTiepoints.get().get(0), pixelScale.get()));
+    }
+
+    private <P extends Position> Envelope<P> buildEnvelope(
+        CoordinateReferenceSystem<P> crs,
+        ModelTiepoint tiepoint,
+        ModelPixelScale pixelScale
+    ) {
         P lowerLeft = MathUtils.transformRasterPointToModelPoint(
-            crs.get(),
+            crs,
             new Point(0, this.metaData.getHeight()),
-            modelTiepoints.get().get(0),
-            pixelScale.get()
+            tiepoint,
+            pixelScale
         );
 
         P upperRight = MathUtils.transformRasterPointToModelPoint(
-            crs.get(),
+            crs,
             new Point(this.metaData.getWidth(), 0),
-            modelTiepoints.get().get(0),
-            pixelScale.get()
+            tiepoint,
+            pixelScale
         );
 
-        return Optional.of(new Envelope<>(lowerLeft, upperRight, crs.get()));
+        return new Envelope<>(lowerLeft, upperRight, crs);
     }
 
     public Optional<? extends CoordinateReferenceSystem<? extends Position>> getCoordinateReferenceSystem() {
@@ -119,11 +146,7 @@ public class GeoTiff implements AutoCloseable {
                     .map(GeoKey::getValueAsInt)
                     // These are known EPSG codes, everything above or below are user-defined or obsolete codes
                     .filter(projectedCrsId -> projectedCrsId >= 20000 && projectedCrsId <= 32760)
-                    .map(CrsRegistry::getProjectedCoordinateReferenceSystemForEPSG)
-                    .or(() -> this.metaData.getGeoKey(GeoKeyId.Projection)
-                        .map(GeoKey::getValueAsInt)
-                        .filter(projectedCrsId -> projectedCrsId >= 10000 && projectedCrsId <= 19999)
-                        .map(CrsRegistry::getProjectedCoordinateReferenceSystemForEPSG));
+                    .map(CrsRegistry::getProjectedCoordinateReferenceSystemForEPSG);
             case Geographic:
                 this.metaData.getGeoKey(GeoKeyId.GeographicType)
                     .map(GeoKey::getValueAsInt)

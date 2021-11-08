@@ -1,16 +1,22 @@
 package com.hendrikjanssen.geotifftools;
 
 import com.hendrikjanssen.geotifftools.metadata.GeoTiffMetadata;
+import com.hendrikjanssen.geotifftools.metadata.ModelPixelScale;
+import com.hendrikjanssen.geotifftools.metadata.ModelTiepoint;
 import com.hendrikjanssen.geotifftools.metadata.geokeys.GeoKey;
 import com.hendrikjanssen.geotifftools.metadata.geokeys.GeoKeyId;
 import com.hendrikjanssen.geotifftools.metadata.geokeys.values.ModelType;
+import org.geolatte.geom.Envelope;
+import org.geolatte.geom.Position;
 import org.geolatte.geom.crs.CoordinateReferenceSystem;
 import org.geolatte.geom.crs.CrsRegistry;
 
+import java.awt.Point;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Optional;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -64,13 +70,50 @@ public class GeoTiff implements AutoCloseable {
             .orElse(ModelType.Unknown);
     }
 
-    public Optional<? extends CoordinateReferenceSystem<?>> getCoordinateReferenceSystem() {
+    @SuppressWarnings("unchecked")
+    public <P extends Position> Optional<Envelope<P>> getEnvelope() {
+
+        ModelType modelType = this.getModelType();
+
+        if (modelType == ModelType.Unknown || modelType == ModelType.Geocentric) {
+            return Optional.empty();
+        }
+
+        Optional<? extends CoordinateReferenceSystem<P>> crs = (Optional<? extends CoordinateReferenceSystem<P>>) this.getCoordinateReferenceSystem();
+
+        if (crs.isEmpty()) {
+            return Optional.empty();
+        }
+
+        Optional<ModelPixelScale> pixelScale = this.metaData.getModelPixelScale();
+        Optional<List<ModelTiepoint>> modelTiepoints = this.metaData.getModelTiepoints();
+
+        if (pixelScale.isEmpty() || modelTiepoints.isEmpty()) {
+            return Optional.empty();
+        }
+
+        P lowerLeft = MathUtils.transformRasterPointToModelPoint(
+            crs.get(),
+            new Point(0, this.metaData.getHeight()),
+            modelTiepoints.get().get(0),
+            pixelScale.get()
+        );
+
+        P upperRight = MathUtils.transformRasterPointToModelPoint(
+            crs.get(),
+            new Point(this.metaData.getWidth(), 0),
+            modelTiepoints.get().get(0),
+            pixelScale.get()
+        );
+
+        return Optional.of(new Envelope<>(lowerLeft, upperRight, crs.get()));
+    }
+
+    public Optional<? extends CoordinateReferenceSystem<? extends Position>> getCoordinateReferenceSystem() {
 
         ModelType modelType = this.getModelType();
 
         switch (modelType) {
-            case Geocentric:
-                throw new RuntimeException("Geocentric ModelTypes are not supported");
             case Projected:
                 return this.metaData.getGeoKey(GeoKeyId.ProjectedCSType)
                     .map(GeoKey::getValueAsInt)
@@ -93,7 +136,7 @@ public class GeoTiff implements AutoCloseable {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() throws IOException {
         this.imageInputStream.flush();
         this.imageInputStream.close();
 

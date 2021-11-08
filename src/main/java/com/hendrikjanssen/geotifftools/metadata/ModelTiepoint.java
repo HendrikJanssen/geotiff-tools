@@ -1,4 +1,4 @@
-package com.hendrikjanssen.geotifftools.metadata.geokeys;
+package com.hendrikjanssen.geotifftools.metadata;
 
 import java.util.Objects;
 

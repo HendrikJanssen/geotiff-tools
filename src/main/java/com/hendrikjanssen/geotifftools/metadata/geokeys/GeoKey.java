@@ -1,12 +1,9 @@
 package com.hendrikjanssen.geotifftools.metadata.geokeys;
 
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.Objects;
 
 public class GeoKey implements Comparable<GeoKey> {
-
-    public static final Comparator<GeoKey> COMPARATOR = Comparator.nullsLast(GeoKey::compareTo);
 
     private final int id;
 

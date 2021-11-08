@@ -1,12 +1,14 @@
 package com.hendrikjanssen.geotifftools;
 
+import com.hendrikjanssen.geotifftools.metadata.GeoTiffMetadata;
 import com.hendrikjanssen.geotifftools.metadata.geokeys.GeoKey;
 import com.hendrikjanssen.geotifftools.metadata.geokeys.GeoKeyId;
 import com.hendrikjanssen.geotifftools.metadata.geokeys.values.ModelType;
-import com.hendrikjanssen.geotifftools.metadata.GeoTiffMetadata;
 import org.geolatte.geom.crs.CoordinateReferenceSystem;
 import org.geolatte.geom.crs.CrsRegistry;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Optional;
@@ -22,6 +24,10 @@ public class GeoTiff implements AutoCloseable {
 
     private final ImageInputStream imageInputStream;
     private final ImageReader imageReader;
+
+    public GeoTiff(File file) throws IOException {
+        this(new FileInputStream(file));
+    }
 
     public GeoTiff(InputStream inputStream) throws IOException {
 
@@ -47,7 +53,7 @@ public class GeoTiff implements AutoCloseable {
         return TIFFDirectory.createFromMetadata(metadata);
     }
 
-    public GeoTiffMetadata getMetaData() {
+    public GeoTiffMetadata getMetadata() {
         return this.metaData;
     }
 

@@ -4,6 +4,9 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent
 plugins {
   id 'groovy'
   id 'java-library'
+
+  id 'checkstyle'
+  id 'org.checkerframework' version '0.6.3'
 }
 
 group = 'com.hendrikjanssen'

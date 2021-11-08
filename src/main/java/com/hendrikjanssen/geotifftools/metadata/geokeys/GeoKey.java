@@ -45,9 +45,16 @@ public class GeoKey implements Comparable<GeoKey> {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof GeoKey)) return false;
+        if (this == o) {
+            return true;
+        }
+
+        if (!(o instanceof GeoKey)) {
+            return false;
+        }
+
         GeoKey geoKey = (GeoKey) o;
+
         return id == geoKey.id;
     }
 

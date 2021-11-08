@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE module PUBLIC "-//Puppy Crawl//DTD Check Configuration 1.3//EN" "http://www.puppycrawl.com/dtds/configuration_1_3.dtd">
+<module name="Checker">
+  <property name="charset" value="UTF-8"/>
+  <property name="severity" value="error"/>
+  <module name="FileTabCharacter"> <!-- 1.3.1 -->
+    <property name="eachLine" value="true"/>
+  </module>
+  <module name="LineLength"> <!-- 3.4, 2.1, 2.2 -->
+    <property name="max" value="140"/>
+    <property name="ignorePattern" value="^package.*|^import.*|a href|href|http://|https://|ftp://"/>
+  </module>
+  <module name="TreeWalker">
+    <module name="EmptyLineSeparator">
+      <property name="tokens" value="CLASS_DEF, INTERFACE_DEF, ENUM_DEF, METHOD_DEF"/>
+      <property name="allowMultipleEmptyLinesInsideClassMembers" value="false"/>
+    </module>
+    <module name="SuppressWarningsHolder"/>
+    <module name="OuterTypeFilename"/> <!-- 1.1 -->
+    <module name="IllegalTokenText"> <!-- 1.3.2 -->
+      <property name="tokens" value="STRING_LITERAL, CHAR_LITERAL"/>
+      <property name="format" value="\\u00(08|09|0(a|A)|0(c|C)|0(d|D)|22|27|5(C|c))|\\(0(10|11|12|14|15|42|47)|134)"/>
+      <property name="message" value="Avoid using corresponding octal or Unicode escape."/>
+    </module>
+    <module name="AvoidEscapedUnicodeCharacters"> <!-- 1.3.3 -->
+      <property name="allowEscapesForControlCharacters" value="true"/>
+      <property name="allowByTailComment" value="true"/>
+      <property name="allowNonPrintableEscapes" value="true"/>
+    </module>
+    <module name="EmptyLineSeparator"> <!-- 2, 3.6.1 -->
+      <property name="allowNoEmptyLineBetweenFields" value="true"/>
+      <property name="allowMultipleEmptyLines" value="false"/>
+    </module>
+    <module name="NoLineWrap"/> <!-- 2.1, 2.2.1 -->
+    <module name="CustomImportOrder"> <!-- 2.2.3 -->
+      <property name="customImportOrderRules" value="STATIC###SPECIAL_IMPORTS###THIRD_PARTY_PACKAGE###STANDARD_JAVA_PACKAGE"/>
+      <property name="thirdPartyPackageRegExp" value="(com|de|groovy|io|lombok|mil|net|org)"/>
+      <property name="specialImportsRegExp" value="de.xm"/>
+      <property name="sortImportsInGroupAlphabetically" value="true"/>
+    </module>
+    <module name="OneTopLevelClass"/> <!-- 2.3.1 -->
+    <module name="OverloadMethodsDeclarationOrder"/> <!-- 2.3.2.1 -->
+    <module name="NeedBraces"/> <!-- 3.1.1 -->
+    <module name="RightCurly"> <!-- 3.1.2 -->
+      <property name="option" value="alone"/>
+      <property name="tokens"
+                value="CLASS_DEF, METHOD_DEF, CTOR_DEF, LITERAL_FOR, LITERAL_WHILE, LITERAL_DO, STATIC_INIT, INSTANCE_INIT"/>
+    </module>
+    <module name="EmptyBlock"/> <!-- 3.1.3 -->
+    <module name="Indentation">   <!-- 3.2, 3.5.2, 3.8.4.1 -->
+      <property name="basicOffset" value="4"/>
+      <property name="braceAdjustment" value="0"/>
+      <property name="caseIndent" value="4"/>
+      <property name="throwsIndent" value="4"/>
+      <property name="lineWrappingIndentation" value="4"/>
+      <property name="arrayInitIndent" value="4"/>
+    </module>
+    <module name="OneStatementPerLine"/> <!-- 3.3 -->
+    <module name="OperatorWrap"> <!-- 3.5.1 -->
+      <property name="option" value="NL"/>
+      <property name="tokens"
+                value="BAND, BOR, BSR, BXOR, DIV, EQUAL, GE, GT, LAND, LE, LITERAL_INSTANCEOF, LOR, LT, MINUS, MOD, NOT_EQUAL, PLUS, QUESTION, SL, SR, STAR "/>
+    </module>
+    <module name="SeparatorWrap"> <!-- 3.5.1 -->
+      <property name="tokens" value="DOT"/>
+      <property name="option" value="nl"/>
+    </module>
+    <module name="SeparatorWrap"> <!-- 3.5.1 -->
+      <property name="tokens" value="COMMA"/>
+      <property name="option" value="EOL"/>
+    </module>
+    <module name="WhitespaceAround"> <!-- 3.6.2 -->
+      <property name="allowEmptyConstructors" value="true"/>
+      <property name="allowEmptyMethods" value="true"/>
+      <property name="allowEmptyTypes" value="true"/>
+      <property name="allowEmptyLoops" value="true"/>
+      <message key="ws.notFollowed"
+               value="WhitespaceAround: ''{0}'' is not followed by whitespace. Empty blocks may only be represented as '{}' when not part of a multi-block statement (4.1.3)"/>
+      <message key="ws.notPreceded" value="WhitespaceAround: ''{0}'' is not preceded with whitespace."/>
+    </module>
+    <module name="GenericWhitespace">
+      <message key="ws.followed" value="GenericWhitespace ''{0}'' is followed by whitespace."/>
+      <message key="ws.preceded" value="GenericWhitespace ''{0}'' is preceded with whitespace."/>
+      <message key="ws.illegalFollow" value="GenericWhitespace ''{0}'' should followed by whitespace."/>
+      <message key="ws.notPreceded" value="GenericWhitespace ''{0}'' is not preceded with whitespace."/>
+    </module>
+    <module name="MultipleVariableDeclarations"/> <!-- 3.8.2.1 -->
+    <module name="VariableDeclarationUsageDistance"/> <!-- 3.8.2.2 -->
+    <module name="ArrayTypeStyle"/> <!-- 3.8.3.2 -->
+    <module name="FallThrough"/> <!-- 3.8.4.2 -->
+    <module name="MissingSwitchDefault"/> <!-- 3.8.4.3 -->
+    <!--<module name="AnnotationLocation">--> <!-- 3.8.5 -->
+    <module name="ModifierOrder"/> <!-- 3.8.7 -->
+    <module name="UpperEll"/> <!-- 3.8.8 -->
+    <module name="PackageName"> <!-- 4.2.1 -->
+      <property name="format" value="^[a-z]+(\.[a-z][a-z0-9]*)*$"/>
+      <message key="name.invalidPattern" value="Package name ''{0}'' must match pattern ''{1}''."/>
+    </module>
+    <module name="TypeName"> <!-- 4.2.2 -->
+      <message key="name.invalidPattern" value="Type name ''{0}'' must match pattern ''{1}''."/>
+    </module>
+    <module name="MethodName"> <!-- 4.2.3 -->
+      <property name="format" value="^[a-z][a-z0-9][a-zA-Z0-9_]*$"/>
+      <message key="name.invalidPattern" value="Method name ''{0}'' must match pattern ''{1}''."/>
+    </module>
+    <module name="MemberName"> <!-- 4.2.5 -->
+      <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+      <message key="name.invalidPattern" value="Member name ''{0}'' must match pattern ''{1}''."/>
+    </module>
+    <module name="ParameterName"> <!-- 4.2.6 -->
+      <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+      <message key="name.invalidPattern" value="Parameter name ''{0}'' must match pattern ''{1}''."/>
+    </module>
+    <module name="ParenPad"/> <!--check for whitespaces in the method parmaters. Violations e.g. doWork( String bla)-->
+    <module
+      name="MethodParamPad"> <!--check for whitespaces in Method Declaration and Constructors. Violations e.g. public void doWork (...)-->
+      <property name="tokens" value="CTOR_DEF,METHOD_DEF,METHOD_CALL"/>
+      <property name="option" value="nospace"/>
+      <property name="allowLineBreaks" value="true"/>
+    </module>
+    <module name="LocalVariableName"> <!-- 4.2.7 -->
+      <property name="tokens" value="VARIABLE_DEF"/>
+      <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+      <property name="allowOneCharVarInForLoop" value="true"/>
+      <message key="name.invalidPattern" value="Local variable name ''{0}'' must match pattern ''{1}''."/>
+    </module>
+    <module name="MethodTypeParameterName"> <!-- 4.2.8 -->
+      <property name="format" value="(^[A-Z][0-9]?)$|([A-Z][a-zA-Z0-9]*[T]$)"/>
+      <message key="name.invalidPattern" value="Method type name ''{0}'' must match pattern ''{1}''."/>
+    </module>
+    <module name="ClassTypeParameterName"> <!-- 4.2.8 -->
+      <property name="format" value="(^[A-Z][0-9]?)$|([A-Z][a-zA-Z0-9]*[T]$)"/>
+      <message key="name.invalidPattern" value="Class type name ''{0}'' must match pattern ''{1}''."/>
+    </module>
+    <module name="AbbreviationAsWordInName"> <!-- 4.3 -->
+      <property name="ignoreFinal" value="false"/>
+      <property name="allowedAbbreviationLength" value="1"/>
+    </module>
+    <module name="EmptyBlock"> <!-- 5.2 -->
+      <property name="option" value="TEXT"/>
+      <property name="tokens" value="LITERAL_TRY, LITERAL_FINALLY, LITERAL_IF, LITERAL_ELSE, LITERAL_SWITCH"/>
+    </module>
+    <module name="NoFinalizer"/> <!-- 5.4 -->
+    <module name="AvoidStarImport"/> <!-- Project Team Decision -->
+    <module name="UnusedImports"/> <!-- Project Team Decision -->
+    <module name="RedundantImport"/>
+    <module name="IllegalImport">
+      <property name="illegalPkgs"
+                value="com.sun, org.bouncycastle, org.apache.commons.codec, org.apache.commons.logging, ch.qos, org.apache.tomcat, org.joda"/>
+    </module>
+    <module name="DeclarationOrder">
+      <property name="ignoreModifiers" value="true"/>
+    </module>
+    <module name="SuppressionCommentFilter"/>
+    <module name="UnnecessarySemicolonInEnumeration"/>
+  </module>
+  <module name="SuppressWarningsFilter"/>
+  <module name="RegexpSingleline">
+    <property name="format" value="\.printStackTrace\(\);"/>
+    <property name="message" value="Using e.printStackTrace() in catch clauses is forbidden. Rethow or handle the exception."/>
+    <property name="fileExtensions" value="java"/>
+  </module>
+  <module name="RegexpSingleline">
+    <property name="format" value="javax\.transaction\.Transactional"/>
+    <property name="message" value="You must not use javax.transaction.Transactional "/>
+    <property name="fileExtensions" value="java"/>
+  </module>
+  <module name="RegexpSingleline">
+    <property name="format" value="System\.(out|err)"/>
+    <property name="message" value="Using System.out or System.err is bad practise. Use @Slf4j instead"/>
+    <property name="fileExtensions" value="java"/>
+  </module>
+</module>

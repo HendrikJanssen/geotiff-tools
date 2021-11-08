@@ -78,7 +78,8 @@ public class GeoTiff implements AutoCloseable {
             return Optional.empty();
         }
 
-        Optional<? extends CoordinateReferenceSystem<P>> crs = (Optional<? extends CoordinateReferenceSystem<P>>) this.getCoordinateReferenceSystem();
+        Optional<? extends CoordinateReferenceSystem<P>> crs =
+            (Optional<? extends CoordinateReferenceSystem<P>>) this.getCoordinateReferenceSystem();
         Optional<ModelPixelScale> pixelScale = this.metaData.getModelPixelScale();
         Optional<List<ModelTiepoint>> modelTiepoints = this.metaData.getModelTiepoints();
 
@@ -103,7 +104,8 @@ public class GeoTiff implements AutoCloseable {
             return Optional.empty();
         }
 
-        Optional<? extends CoordinateReferenceSystem<P>> crs = (Optional<? extends CoordinateReferenceSystem<P>>) this.getCoordinateReferenceSystem();
+        Optional<? extends CoordinateReferenceSystem<P>> crs =
+            (Optional<? extends CoordinateReferenceSystem<P>>) this.getCoordinateReferenceSystem();
         Optional<ModelPixelScale> pixelScale = this.metaData.getModelPixelScale();
         Optional<List<ModelTiepoint>> modelTiepoints = this.metaData.getModelTiepoints();
 
@@ -148,7 +150,7 @@ public class GeoTiff implements AutoCloseable {
                     .filter(projectedCrsId -> projectedCrsId >= 20000 && projectedCrsId <= 32760)
                     .map(CrsRegistry::getProjectedCoordinateReferenceSystemForEPSG);
             case Geographic:
-                this.metaData.getGeoKey(GeoKeyId.GeographicType)
+                return this.metaData.getGeoKey(GeoKeyId.GeographicType)
                     .map(GeoKey::getValueAsInt)
                     // These are known EPSG codes, everything above or below are user-defined or obsolete codes
                     .filter(geographicCrsId -> geographicCrsId >= 4000 && geographicCrsId <= 4999)

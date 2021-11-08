@@ -1,9 +1,8 @@
+![ci](https://github.com/HendrikJanssen/geotiff-tools/actions/workflows/ci.yaml/badge.svg)
 # geotiff-tools
 
-![ci](https://github.com/HendrikJanssen/geotiff-tools/actions/workflows/ci.yaml/badge.svg)
-
-This is a java library in construction to enable basic integration with geolatte and easy access to geokey information stored in geotiffs.
-In the future, it will also enable basic rendering functionality for converting geotiffs into plain .png or .jpg images using a sample transformation.
+This is a pure, minimal-dependencies java library to enable integration with [Geolatte](https://github.com/GeoLatte/geolatte-geom) and easy access to geokey information stored in geotiffs.
+In the future, it will also enable basic rendering functionality for converting geotiffs into plain .png or .jpg images.
 
 ## State of development
 
@@ -48,8 +47,6 @@ The GeoKeys are returned as an `Optional<GeoKey>`. You can access its value/valu
 - `double[] getValueAsDoubles()`
 - `String getValueAsString()`
 
-Example:
-
 ```java
 Optional<GeoKey> key = metdata.getGeoKey(GeoKeyId.GTModelType);
 
@@ -59,10 +56,10 @@ assert key.get().getValueAsInt() == ModelType.Projected.getCode();
 
 ### Reading the ModelTiepoints
 
-Tiepoints are accessible via the `getModelTiepoints()` method. Note that when no tipoints are present, the list ist going to be empty.
+Tiepoints are accessible via the `getModelTiepoints()` method.
 
 ```java
-List<ModelTiepoint> tipoints = metadata.getModelTiepoints();
+Optional<List<ModelTiepoint>> tipoints = metadata.getModelTiepoints();
 ```
 
 ### Reading the CoordinateReferenceSystem (CRS)
@@ -72,13 +69,38 @@ You can access high-level information provided as [Geolatte](https://github.com/
 **Note that currently, only standard EPSG CRS are supported, no user-defined CRS and no CRS from other authorities!**
 
 ```java
-Optional<? extends CoordinateReferenceSystem<?>> crs = geoTiff.getCoordinateReferenceSystem();
+Optional<? extends CoordinateReferenceSystem<? extends Position>> crs = geoTiff.getCoordinateReferenceSystem();
 
 assert crs.isPresent();
 assert crs.get().getName().equals("WGS 84 / UTM zone 31N");
 ```
 
+### Getting the BoundingBox (Envelope)
 
+You can get the `Envelope<P>` by using the `Optional<Envelope<P>> getEnvelope()` method on the `GeoTiff` class. The method
+is generic, so you need to know the projection beforehand. For finding the projection type, use the `getModelType()` method on the `GeoTiff` class.
+
+**Note that currently, only georeferencing via ModelTiepoints and ModelPixelScale is supported!**
+
+```java
+ModelType modelType = geoTiff.getModelType();
+
+Optional<Envelope<? extends Position>> envelope;
+
+switch(modelType) {
+    case ModelType.Projected:
+        envelope = geoTiff.<C2D>getEnvelope();
+        break;
+        
+    case ModeType.Geographic:
+        envelope = geoTiff.<G2D>getEnvelope();
+        break;
+
+    ...
+}
+
+assert envelope.isPresent();
+```
 
 ## License
 

@@ -11,8 +11,8 @@ import javax.imageio.plugins.tiff.TIFFField;
 
 public class GeoTiffMetadata {
 
-    private static final int ImageWidthTagLocation = 256;
-    private static final int ImageLengthTagLocation = 257;
+    private static final int ImageWidthTagId = 256;
+    private static final int ImageLengthTagId = 257;
 
     private static final int GeoKeyShortTagId = 34735;
     private static final int GeoKeyDoubleTagId = 34736;
@@ -30,9 +30,8 @@ public class GeoTiffMetadata {
     private final int height;
 
     public GeoTiffMetadata(TIFFDirectory tiffDirectory) {
-
-        this.width = tiffDirectory.getTIFFField(ImageWidthTagLocation).getAsInt(0);
-        this.height = tiffDirectory.getTIFFField(ImageLengthTagLocation).getAsInt(0);
+        this.width = tiffDirectory.getTIFFField(ImageWidthTagId).getAsInt(0);
+        this.height = tiffDirectory.getTIFFField(ImageLengthTagId).getAsInt(0);
 
         this.geoKeys = readGeoKeyData(tiffDirectory);
 
@@ -78,9 +77,9 @@ public class GeoTiffMetadata {
         int[] geoKeyDirectoryData = tiffDirectory.getTIFFField(GeoKeyShortTagId).getAsInts();
 
         double[] geoDoubleParamsData = new double[1];
-        TIFFField gGeoKeyDoubleField = tiffDirectory.getTIFFField(GeoKeyDoubleTagId);
-        if (gGeoKeyDoubleField != null) {
-            geoDoubleParamsData = gGeoKeyDoubleField.getAsDoubles();
+        TIFFField geoKeyDoubleField = tiffDirectory.getTIFFField(GeoKeyDoubleTagId);
+        if (geoKeyDoubleField != null) {
+            geoDoubleParamsData = geoKeyDoubleField.getAsDoubles();
         }
 
         String geoAsciiParamsData = "";
@@ -89,12 +88,12 @@ public class GeoTiffMetadata {
             geoAsciiParamsData = geoAsciiField.getAsString(0);
         }
 
-        // header parsing
+        // Header (4 integers)
         int geoKeysNum = geoKeyDirectoryData[3];
 
         GeoKey[] parsedKeys = new GeoKey[geoKeysNum];
 
-        int i = 4;
+        int i = 4; // Skip header
         int currentKeyIndex = 0;
         while (i < geoKeyDirectoryData.length) {
 
@@ -134,8 +133,7 @@ public class GeoTiffMetadata {
         }
 
         // Ensure sorting (even though the standard requires the keys
-        // to be sorted) since we rely on that in the code.
-        // Sorting an already sorted array should be O(n)
+        // to be sorted) since we rely on that in the code
         Arrays.sort(parsedKeys);
 
         return parsedKeys;

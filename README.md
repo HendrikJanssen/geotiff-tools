@@ -59,7 +59,7 @@ assert key.get().getValueAsInt() == ModelType.Projected.getCode();
 Tiepoints are accessible via the `getModelTiepoints()` method.
 
 ```java
-Optional<List<ModelTiepoint>>tiepoints=metadata.getModelTiepoints();
+Optional<List<ModelTiepoint>>tiepoints = metadata.getModelTiepoints();
 ```
 
 ### Reading the CoordinateReferenceSystem (CRS)
@@ -69,10 +69,10 @@ You can access high-level information provided as [Geolatte](https://github.com/
 **Note that currently, only standard EPSG CRS are supported, no user-defined CRS and no CRS from other authorities!**
 
 ```java
-Optional<?extends CoordinateReferenceSystem<? extends Position>> crs=geoTiff.getCoordinateReferenceSystem();
+Optional<? extends CoordinateReferenceSystem<? extends Position>> crs = geoTiff.getCoordinateReferenceSystem();
 
-    assert crs.isPresent();
-    assert crs.get().getName().equals("WGS 84 / UTM zone 31N");
+assert crs.isPresent();
+assert crs.get().getName().equals("WGS 84 / UTM zone 31N");
 ```
 
 ### Getting the coordinates of a raster point
@@ -84,10 +84,10 @@ method on the `GeoTiff` class for that.
 **Note that currently, only georeferencing via ModelTiepoints and ModelPixelScale is supported!**
 
 ```java
-Optional<G2D> point=geoTiff.transformRasterPointToModelPoint(50,50);
+Optional<G2D> point = geoTiff.transformRasterPointToModelPoint(50,50);
 
-    assert point.isPresent();
-    assert point.get().equals(new G2D(6.783922,51.232683));
+assert point.isPresent();
+assert point.get().equals(new G2D(6.783922,51.232683));
 ```
 
 ### Getting the BoundingBox (Envelope)

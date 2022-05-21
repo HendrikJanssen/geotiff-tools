@@ -2,34 +2,67 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 plugins {
-  id 'groovy'
-  id 'java-library'
+  id "groovy"
+  id "java-library"
+  id "maven-publish"
+  id "signing"
 
-  id 'checkstyle'
-  id 'org.checkerframework' version '0.6.3'
+  id "checkstyle"
+  id "org.checkerframework" version "0.6.3"
 }
 
-group = 'de.hendrikjanssen'
-version = '0.1.0'
+group = "de.hendrikjanssen"
+archivesBaseName = "geotiff-tools"
+version = "0.1.0"
 
 repositories {
   mavenCentral()
 }
 
 dependencies {
-  api('org.geolatte:geolatte-geom:1.8.2')
+  api("org.geolatte:geolatte-geom:1.8.2")
 
-  testImplementation(platform('org.junit:junit-bom:5.8.1'))
-  testImplementation('org.junit.jupiter:junit-jupiter')
+  testImplementation(platform("org.junit:junit-bom:5.8.1"))
+  testImplementation("org.junit.jupiter:junit-jupiter")
 
-  testImplementation('org.spockframework:spock-core:2.1-groovy-3.0')
+  testImplementation("org.spockframework:spock-core:2.1-groovy-3.0")
 
-  testImplementation(platform('org.codehaus.groovy:groovy-bom:3.0.8'))
+  testImplementation(platform("org.codehaus.groovy:groovy-bom:3.0.8"))
 }
 
 java {
   toolchain {
     languageVersion = JavaLanguageVersion.of(11)
+  }
+}
+
+task javadocJar(type: Jar) {
+  archiveClassifier.set("javadoc")
+  from javadoc
+}
+
+task sourcesJar(type: Jar) {
+  archiveClassifier.set("sources")
+  from sourceSets.main.allSource
+}
+
+artifacts {
+  archives javadocJar, sourcesJar
+}
+
+signing {
+  sign configurations.archives
+}
+
+publishing {
+  publications {
+    maven(MavenPublication) {
+      groupId = group
+      artifactId = project.name
+      version = version
+
+      from components.java
+    }
   }
 }
 

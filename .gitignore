@@ -34,14 +34,9 @@ crashlytics.properties
 crashlytics-build.properties
 fabric.properties
 
-
 *.DS_Store
 .AppleDouble
 .LSOverride
-
-# Icon must end with two \r
-Icon
-
 
 # Thumbnails
 ._*
@@ -79,3 +74,20 @@ gradle.properties
 
 # # Work around https://youtrack.jetbrains.com/issue/IDEA-116898
 gradle/wrapper/gradle-wrapper.properties
+
+# build output
+dist/
+
+# dependencies
+node_modules/
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# environment variables
+.env
+
+/documentation/public/javadoc/

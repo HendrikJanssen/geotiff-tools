@@ -2,6 +2,7 @@ package com.hendrikjanssen.geotifftools.metadata;
 
 import com.hendrikjanssen.geotifftools.MalformedGeoTiffException;
 import com.hendrikjanssen.geotifftools.metadata.geokeys.GeoKey;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.Arrays;
 import java.util.List;
@@ -52,7 +53,6 @@ public class GeoTiffMetadata {
     }
 
     public Optional<GeoKey> getGeoKey(int geoKeyId) {
-
         for (GeoKey geoKey : geoKeys) {
             if (geoKey.getId() == geoKeyId) {
                 return Optional.of(geoKey);
@@ -63,7 +63,8 @@ public class GeoTiffMetadata {
     }
 
     public Optional<List<ModelTiepoint>> getModelTiepoints() {
-        return Optional.ofNullable(this.tiepoints)
+        return Optional
+            .ofNullable(this.tiepoints)
             .map(ModelTiepoint[]::clone)
             .map(Arrays::asList);
     }
@@ -171,7 +172,8 @@ public class GeoTiffMetadata {
         return tiepoints;
     }
 
-    private ModelPixelScale readPixelScale(TIFFField pixelScaleField) {
+    @Nullable
+    private ModelPixelScale readPixelScale(@Nullable TIFFField pixelScaleField) {
 
         if (pixelScaleField == null) {
             return null;

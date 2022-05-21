@@ -24,4 +24,18 @@ class MathUtils {
 
         return Positions.mkPosition(crs, x, y);
     }
+
+    static <P extends Position> Point transformModelPointToRasterPoint(
+        P modelPoint,
+        ModelTiepoint reference,
+        ModelPixelScale pixelScale
+    ) {
+        double distanceX = (modelPoint.getCoordinate(0) - reference.getX());
+        double distanceY = (modelPoint.getCoordinate(1) - reference.getY());
+
+        double x = reference.getI() + (distanceX * pixelScale.getX());
+        double y = reference.getJ() - (distanceY * pixelScale.getY());
+
+        return new Point((int) x, (int) y);
+    }
 }

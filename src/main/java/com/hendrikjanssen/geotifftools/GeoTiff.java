@@ -12,6 +12,7 @@ import org.geolatte.geom.crs.CoordinateReferenceSystem;
 import org.geolatte.geom.crs.CrsRegistry;
 
 import java.awt.Point;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -59,6 +60,10 @@ public class GeoTiff implements AutoCloseable {
         return TIFFDirectory.createFromMetadata(metadata);
     }
 
+    public BufferedImage readImageIntoBuffer() throws IOException {
+        return imageReader.read(0);
+    }
+
     public GeoTiffMetadata getMetadata() {
         return this.metaData;
     }
@@ -90,6 +95,27 @@ public class GeoTiff implements AutoCloseable {
         return Optional.of(MathUtils.transformRasterPointToModelPoint(
             crs.get(),
             new Point(rasterX, rasterY),
+            modelTiepoints.get().get(0),
+            pixelScale.get()
+        ));
+    }
+
+    public <P extends Position> Optional<Point> transformModelPointToRasterPoint(P modelPoint) {
+        ModelType modelType = this.getModelType();
+
+        if (modelType == ModelType.Unknown || modelType == ModelType.Geocentric) {
+            return Optional.empty();
+        }
+
+        Optional<ModelPixelScale> pixelScale = this.metaData.getModelPixelScale();
+        Optional<List<ModelTiepoint>> modelTiepoints = this.metaData.getModelTiepoints();
+
+        if (pixelScale.isEmpty() || modelTiepoints.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return Optional.of(MathUtils.transformModelPointToRasterPoint(
+            modelPoint,
             modelTiepoints.get().get(0),
             pixelScale.get()
         ));

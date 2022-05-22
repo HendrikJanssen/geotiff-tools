@@ -1,17 +1,20 @@
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
+import java.time.LocalDateTime
+
 plugins {
   id "groovy"
   id "java-library"
   id "maven-publish"
   id "signing"
+  id "io.github.gradle-nexus.publish-plugin" version "1.1.0"
 
   id "checkstyle"
   id "org.checkerframework" version "0.6.3"
 }
 
-group = "de.hendrikjanssen"
+group = "de.hendrik-janssen"
 archivesBaseName = "geotiff-tools"
 version = "0.1.0"
 
@@ -31,38 +34,11 @@ dependencies {
 }
 
 java {
+  withJavadocJar()
+  withSourcesJar()
+
   toolchain {
     languageVersion = JavaLanguageVersion.of(11)
-  }
-}
-
-task javadocJar(type: Jar) {
-  archiveClassifier.set("javadoc")
-  from javadoc
-}
-
-task sourcesJar(type: Jar) {
-  archiveClassifier.set("sources")
-  from sourceSets.main.allSource
-}
-
-artifacts {
-  archives javadocJar, sourcesJar
-}
-
-signing {
-  sign configurations.archives
-}
-
-publishing {
-  publications {
-    maven(MavenPublication) {
-      groupId = group
-      artifactId = project.name
-      version = version
-
-      from components.java
-    }
   }
 }
 
@@ -76,3 +52,67 @@ test {
     exceptionFormat = TestExceptionFormat.FULL
   }
 }
+
+artifacts {
+  archives javadocJar, sourcesJar
+}
+
+nexusPublishing {
+  repositories {
+    sonatype {
+      nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
+      snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
+    }
+  }
+}
+
+publishing {
+  publications {
+    mavenJava(MavenPublication) {
+      from(components.java)
+      pom {
+        name = "geotiff-tools"
+        description = 'A library for rendering and extracting geokeys from geotiffs and integrating with geolatte-geom.'
+        url = 'https://github.com/HendrikJanssen/geotiff-tools'
+
+        licenses {
+          license {
+            name = 'MIT License'
+            url = 'https://raw.githubusercontent.com/HendrikJanssen/geotiff-tools/main/LICENSE'
+          }
+        }
+        developers {
+          developer {
+            id = 'hjanssen'
+            name = 'Hendrik Janßen'
+          }
+        }
+        scm {
+          url = 'https://github.com/HendrikJanssen/geotiff-tools'
+          connection = 'scm:git://github.com/HendrikJanssen/geotiff-tools.git'
+          developerConnection = 'scm:git://github.com/HendrikJanssen/geotiff-tools.git'
+        }
+      }
+    }
+  }
+}
+
+signing {
+  sign publishing.publications.mavenJava
+}
+
+ext.genOutputDir = file("$buildDir/generated-resources")
+
+task generateVersionTxt() {
+  ext.outputFile = file("$genOutputDir/version.txt")
+  outputs.file(outputFile)
+  doLast {
+    outputFile.text = """GroupId: ${project.group}
+Name: ${project.name}
+Version: $version
+Build-time: ${LocalDateTime.now()}
+"""
+  }
+}
+
+sourceSets.main.output.dir genOutputDir, builtBy: generateVersionTxt

@@ -30,11 +30,11 @@ class MathUtils {
         ModelTiepoint reference,
         ModelPixelScale pixelScale
     ) {
-        double distanceX = (modelPoint.getCoordinate(0) - reference.getX());
-        double distanceY = (modelPoint.getCoordinate(1) - reference.getY());
+        double modelDistanceX = (modelPoint.getCoordinate(0) - reference.getX());
+        double modelDistanceY = (modelPoint.getCoordinate(1) - reference.getY());
 
-        double x = reference.getI() + (distanceX * pixelScale.getX());
-        double y = reference.getJ() - (distanceY * pixelScale.getY());
+        double x = reference.getI() + (modelDistanceX * pixelScale.getX());
+        double y = reference.getJ() - (modelDistanceY * pixelScale.getY());
 
         return new Point((int) x, (int) y);
     }

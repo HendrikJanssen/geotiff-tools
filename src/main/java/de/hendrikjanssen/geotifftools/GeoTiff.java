@@ -25,11 +25,17 @@ import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.plugins.tiff.TIFFDirectory;
 import javax.imageio.stream.ImageInputStream;
 
+/**
+ * The main class that all geotiff operations are based on.
+ * It handles things like loading the geotiff metadata and exposes methods for common
+ * transform operations.
+ */
 public class GeoTiff implements AutoCloseable {
 
     private final GeoTiffMetadata metaData;
 
     private final ImageInputStream imageInputStream;
+
     private final ImageReader imageReader;
 
     public GeoTiff(File file) throws IOException {
@@ -64,10 +70,22 @@ public class GeoTiff implements AutoCloseable {
         return imageReader.read(0);
     }
 
+    /**
+     * Gets the metadata associated with this geotiff.
+     *
+     * @return The loaded metadata contained in the geotiff.
+     */
     public GeoTiffMetadata getMetadata() {
         return this.metaData;
     }
 
+    /**
+     * Returns the ModelType specified inside the geokey metadata of the geotiff,
+     * or ModelType.UNKNOWN if the ModelType is unspecified.
+     *
+     * @return The ModelType specified by the geotiff metadata.
+     * @see <a href="http://geotiff.maptools.org/spec/geotiff6.html#6.3.1.1">Spec reference</a>
+     */
     public ModelType getModelType() {
         return this.metaData.getGeoKey(GeoKeyId.GTModelType)
             .map(GeoKey::getValueAsInt)
@@ -75,12 +93,27 @@ public class GeoTiff implements AutoCloseable {
             .orElse(ModelType.Unknown);
     }
 
+    /**
+     * Transforms a point in raster space into model space.
+     * If any parameter needed for the transformation is not specified in the geotiff, the function will return an empty Optional.
+     * This function supports specifying raster points outside the raster space of the geotiff, like (-10, -20).
+     * Note that the further you stray from any model tiepoints, the more inaccurate the interpolation will probably be.
+     *
+     * @param rasterX The X-coordinate (horizontal axis) of a point in raster space
+     * @param rasterY The Y-coordinate (vertical axis) of a point in raster space
+     * @param <P>     The type of the point resulting from the transformation, usually a G2D
+     * @return An Optional containing the transformed point.
+     */
     @SuppressWarnings("unchecked")
     public <P extends Position> Optional<P> transformRasterPointToModelPoint(int rasterX, int rasterY) {
         ModelType modelType = this.getModelType();
 
-        if (modelType == ModelType.Unknown || modelType == ModelType.Geocentric) {
+        if (ModelType.Unknown.equals(modelType)) {
             return Optional.empty();
+        }
+
+        if (ModelType.Geocentric.equals(modelType)) {
+            throw new UnsupportedOperationException("Only Projected and Geographic ModelTypes are supported");
         }
 
         Optional<? extends CoordinateReferenceSystem<P>> crs =
@@ -95,16 +128,31 @@ public class GeoTiff implements AutoCloseable {
         return Optional.of(MathUtils.transformRasterPointToModelPoint(
             crs.get(),
             new Point(rasterX, rasterY),
-            modelTiepoints.get().get(0),
+            modelTiepoints.get().get(0), // TODO: Select tiepoint based on raster distance
             pixelScale.get()
         ));
     }
 
+    /**
+     * Transforms a model point into raster space.
+     * If any parameter needed for the transformation is not specified in the geotiff, the function will return an empty Optional.
+     * Note that no bounds checking is performed, so it is perfectly fine to receive a result like (-10, -10).
+     * Raster coordinates are not rounded, but cut off by simply converting the resulting raster coordinates to integers.
+     *
+     * @param modelPoint A point in model space.
+     * @return An Optional containing the transformed point, or an empty Optional
+     * if any information needed for the transformation is not present.
+     * @param <P> The type of the Position in model, usually a G2D
+     */
     public <P extends Position> Optional<Point> transformModelPointToRasterPoint(P modelPoint) {
         ModelType modelType = this.getModelType();
 
-        if (modelType == ModelType.Unknown || modelType == ModelType.Geocentric) {
+        if (ModelType.Unknown.equals(modelType)) {
             return Optional.empty();
+        }
+
+        if (ModelType.Geocentric.equals(modelType)) {
+            throw new UnsupportedOperationException("Only Projected and Geographic ModelTypes are supported");
         }
 
         Optional<ModelPixelScale> pixelScale = this.metaData.getModelPixelScale();
@@ -121,13 +169,24 @@ public class GeoTiff implements AutoCloseable {
         ));
     }
 
+    /**
+     * Calculates the envelope of the geotiff by transforming the lower left and upper right corners of the geotiff into model space.
+     * If any parameter needed for the transformation is not specified in the geotiff, the function will return an empty Optional.
+     *
+     * @param <P> The type of Positions of the model space, usually a G2D
+     * @return An Optional containing the calculated bounding box, or an empty Optional
+     * if any information needed for envelope calculation is missing.
+     */
     @SuppressWarnings("unchecked")
     public <P extends Position> Optional<Envelope<P>> getEnvelope() {
-
         ModelType modelType = this.getModelType();
 
-        if (modelType == ModelType.Unknown || modelType == ModelType.Geocentric) {
+        if (ModelType.Unknown.equals(modelType)) {
             return Optional.empty();
+        }
+
+        if (ModelType.Geocentric.equals(modelType)) {
+            throw new UnsupportedOperationException("Only Projected and Geographic ModelTypes are supported");
         }
 
         Optional<? extends CoordinateReferenceSystem<P>> crs =
@@ -139,33 +198,29 @@ public class GeoTiff implements AutoCloseable {
             return Optional.empty();
         }
 
-        return Optional.of(this.buildEnvelope(crs.get(), modelTiepoints.get().get(0), pixelScale.get()));
-    }
+        // TODO: Select tiepoint based on raster distance to the points
+        ModelTiepoint referenceTiepoint = modelTiepoints.get().get(0);
 
-    private <P extends Position> Envelope<P> buildEnvelope(
-        CoordinateReferenceSystem<P> crs,
-        ModelTiepoint tiepoint,
-        ModelPixelScale pixelScale
-    ) {
         P lowerLeft = MathUtils.transformRasterPointToModelPoint(
-            crs,
+            crs.get(),
             new Point(0, this.metaData.getHeight()),
-            tiepoint,
-            pixelScale
+            referenceTiepoint,
+            pixelScale.get()
         );
 
         P upperRight = MathUtils.transformRasterPointToModelPoint(
-            crs,
+            crs.get(),
             new Point(this.metaData.getWidth(), 0),
-            tiepoint,
-            pixelScale
+            referenceTiepoint,
+            pixelScale.get()
         );
 
-        return new Envelope<>(lowerLeft, upperRight, crs);
+        Envelope<P> envelope = new Envelope<>(lowerLeft, upperRight, crs.get());
+
+        return Optional.of(envelope);
     }
 
     public Optional<? extends CoordinateReferenceSystem<? extends Position>> getCoordinateReferenceSystem() {
-
         ModelType modelType = this.getModelType();
 
         switch (modelType) {

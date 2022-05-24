@@ -1,12 +1,6 @@
-package de.hendrikjanssen.geotifftools
+package de.hendrikjanssen.geotifftools.rendering
 
-
-import de.hendrikjanssen.geotifftools.rendering.GeoTiffRendererBuilder
-import de.hendrikjanssen.geotifftools.rendering.IntegerSample
-import de.hendrikjanssen.geotifftools.rendering.IntegerSampler
-import de.hendrikjanssen.geotifftools.rendering.RenderTarget
-import de.hendrikjanssen.geotifftools.rendering.RgbImageWriter
-import de.hendrikjanssen.geotifftools.rendering.SimpleColorTransform
+import de.hendrikjanssen.geotifftools.GeoTiff
 import spock.lang.Specification
 
 import javax.imageio.ImageIO
@@ -15,8 +9,8 @@ class RenderTest extends Specification {
 
   def 'should render osgeo sample "intergraph - utm" correctly'() {
     given:
-      def sentinelSample = this.class.getResourceAsStream("osgeo-samples/intergraph/utm.tif")
-      def output = new File("./test.png").newOutputStream()
+      def sentinelSample = this.class.getResourceAsStream("/de/hendrikjanssen/geotifftools/osgeo-samples/intergraph/utm.tif")
+      def file = new File("./test.png")
 
     when:
       try (def result = new GeoTiff(sentinelSample as InputStream)) {
@@ -32,10 +26,15 @@ class RenderTest extends Specification {
 
         def image = renderer.render(result, RenderTarget.ofOriginalGeoTiffSize(result))
 
-        ImageIO.write(image, "png", output)
+        ImageIO.write(image, "png", file.newOutputStream())
       }
 
     then:
       noExceptionThrown()
+
+    cleanup:
+      if (file.exists()) {
+        file.delete()
+      }
   }
 }

@@ -4,11 +4,12 @@ if [ -f .env ]; then
 fi
 
 # Update javadoc
+cd ./geotiff-tools || exit
 ./gradlew javadoc
-rsync -avu --delete ./build/docs/javadoc/ ./documentation/public/javadoc
+rsync -avu --delete ./build/docs/javadoc/ ../documentation/public/javadoc
 
 # Build documentation
-cd ./documentation || exit
+cd ../documentation || exit
 npm run build
 
 # Upload to S3 bucket and invalidate cloudfront distribution

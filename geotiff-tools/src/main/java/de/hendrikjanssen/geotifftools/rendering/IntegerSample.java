@@ -14,4 +14,12 @@ public class IntegerSample extends Sample {
     public int[] getValues() {
         return values;
     }
+
+    public int getAt(int index) {
+        return this.values[index];
+    }
+
+    public void setAt(int index, int value) {
+        this.values[index] = value;
+    }
 }

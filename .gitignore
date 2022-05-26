@@ -59,7 +59,7 @@ Temporary Items
 
 # From https://github.com/github/gitignore/blob/master/Gradle.gitignore
 .gradle
-/build/
+geotiff-tools/build/
 
 # Ignore Gradle GUI config
 gradle-app.setting
@@ -70,10 +70,7 @@ gradle-app.setting
 # Cache of project
 .gradletasknamecache
 
-gradle.properties
-
-# # Work around https://youtrack.jetbrains.com/issue/IDEA-116898
-gradle/wrapper/gradle-wrapper.properties
+geotiff-tools/gradle.properties
 
 # build output
 dist/

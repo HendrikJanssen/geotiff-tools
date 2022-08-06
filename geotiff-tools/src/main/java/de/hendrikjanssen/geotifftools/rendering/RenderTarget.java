@@ -22,13 +22,13 @@ public class RenderTarget {
 
     public static RenderTarget ofOriginalGeoTiffSize(GeoTiff geoTiff) {
         return new RenderTarget(new Dimension(
-            geoTiff.getMetadata().getWidth(),
-            geoTiff.getMetadata().getHeight()
+            (int) geoTiff.getMetadata().getWidth(),
+            (int) geoTiff.getMetadata().getHeight()
         ));
     }
 
     public RenderTarget scaleUniform(double factor) {
-        
+
         if (Double.isNaN(factor)) {
             throw new IllegalArgumentException("Factor cannot be NaN");
         }

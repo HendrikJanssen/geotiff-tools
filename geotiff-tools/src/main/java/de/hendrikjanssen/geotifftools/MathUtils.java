@@ -16,11 +16,11 @@ class MathUtils {
         ModelTiepoint reference,
         ModelPixelScale pixelScale
     ) {
-        double rasterDistanceX = (rasterPoint.x - reference.getI());
-        double rasterDistanceY = (rasterPoint.y - reference.getJ());
+        double rasterDistanceX = (rasterPoint.x - reference.i());
+        double rasterDistanceY = (rasterPoint.y - reference.j());
 
-        double x = reference.getX() + (rasterDistanceX * pixelScale.getX());
-        double y = reference.getY() - (rasterDistanceY * pixelScale.getY());
+        double x = reference.x() + (rasterDistanceX * pixelScale.getX());
+        double y = reference.y() - (rasterDistanceY * pixelScale.getY());
 
         return Positions.mkPosition(crs, x, y);
     }
@@ -30,11 +30,11 @@ class MathUtils {
         ModelTiepoint reference,
         ModelPixelScale pixelScale
     ) {
-        double modelDistanceX = (modelPoint.getCoordinate(0) - reference.getX());
-        double modelDistanceY = (modelPoint.getCoordinate(1) - reference.getY());
+        double modelDistanceX = (modelPoint.getCoordinate(0) - reference.x());
+        double modelDistanceY = (modelPoint.getCoordinate(1) - reference.y());
 
-        double x = reference.getI() + (modelDistanceX * pixelScale.getX());
-        double y = reference.getJ() - (modelDistanceY * pixelScale.getY());
+        double x = reference.i() + (modelDistanceX * pixelScale.getX());
+        double y = reference.j() - (modelDistanceY * pixelScale.getY());
 
         return new Point((int) x, (int) y);
     }

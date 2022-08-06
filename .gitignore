@@ -88,3 +88,6 @@ pnpm-debug.log*
 .env
 
 /documentation/public/javadoc/
+
+internal-samples/
+internaltest/

@@ -1,4 +1,4 @@
-package de.hendrikjanssen.geotifftools.rendering;
+package de.hendrikjanssen.geotifftools.rendering.sampling;
 
 import java.awt.Point;
 

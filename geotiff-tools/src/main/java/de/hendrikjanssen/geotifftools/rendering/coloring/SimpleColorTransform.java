@@ -1,6 +1,9 @@
-package de.hendrikjanssen.geotifftools.rendering;
+package de.hendrikjanssen.geotifftools.rendering.coloring;
 
 import de.hendrikjanssen.geotifftools.GeoTiff;
+import de.hendrikjanssen.geotifftools.rendering.sampling.DoubleSample;
+import de.hendrikjanssen.geotifftools.rendering.sampling.IntegerSample;
+import de.hendrikjanssen.geotifftools.rendering.sampling.Sample;
 
 import java.awt.Color;
 

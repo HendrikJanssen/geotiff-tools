@@ -1,5 +1,7 @@
 package de.hendrikjanssen.geotifftools;
 
+import com.twelvemonkeys.imageio.plugins.tiff.TIFFImageMetadata;
+import com.twelvemonkeys.imageio.plugins.tiff.TIFFImageReader;
 import de.hendrikjanssen.geotifftools.metadata.GeoTiffMetadata;
 import de.hendrikjanssen.geotifftools.metadata.ModelPixelScale;
 import de.hendrikjanssen.geotifftools.metadata.ModelTiepoint;
@@ -21,8 +23,6 @@ import java.util.List;
 import java.util.Optional;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
-import javax.imageio.metadata.IIOMetadata;
-import javax.imageio.plugins.tiff.TIFFDirectory;
 import javax.imageio.stream.ImageInputStream;
 
 /**
@@ -36,7 +36,7 @@ public class GeoTiff implements AutoCloseable {
 
     private final ImageInputStream imageInputStream;
 
-    private final ImageReader imageReader;
+    private final TIFFImageReader imageReader;
 
     public GeoTiff(File file) throws IOException {
         this(new FileInputStream(file));
@@ -48,22 +48,25 @@ public class GeoTiff implements AutoCloseable {
 
         this.imageReader = initializeImageReader(imageInputStream);
 
-        TIFFDirectory tiffDirectory = readTiffTags(this.imageReader);
+        TIFFImageMetadata metadata = readTiffTags(this.imageReader);
 
-        this.metaData = new GeoTiffMetadata(tiffDirectory);
+        this.metaData = new GeoTiffMetadata(metadata);
     }
 
-    private ImageReader initializeImageReader(ImageInputStream imageInputStream) {
-
+    private TIFFImageReader initializeImageReader(ImageInputStream imageInputStream) {
         ImageReader imageReader = ImageIO.getImageReadersByFormatName("tiff").next();
+
+        if (!(imageReader instanceof TIFFImageReader)) {
+            throw new IllegalStateException("");
+        }
+
         imageReader.setInput(imageInputStream, false, false);
-        return imageReader;
+        return (TIFFImageReader) imageReader;
     }
 
-    private TIFFDirectory readTiffTags(ImageReader imageReader) throws IOException {
+    private TIFFImageMetadata readTiffTags(TIFFImageReader imageReader) throws IOException {
 
-        IIOMetadata metadata = imageReader.getImageMetadata(0);
-        return TIFFDirectory.createFromMetadata(metadata);
+        return (TIFFImageMetadata) imageReader.getImageMetadata(0);
     }
 
     public BufferedImage readImageIntoBuffer() throws IOException {
@@ -140,9 +143,9 @@ public class GeoTiff implements AutoCloseable {
      * Raster coordinates are not rounded, but cut off by simply converting the resulting raster coordinates to integers.
      *
      * @param modelPoint A point in model space.
+     * @param <P>        The type of the Position in model, usually a G2D
      * @return An Optional containing the transformed point, or an empty Optional
      * if any information needed for the transformation is not present.
-     * @param <P> The type of the Position in model, usually a G2D
      */
     public <P extends Position> Optional<Point> transformModelPointToRasterPoint(P modelPoint) {
         ModelType modelType = this.getModelType();
@@ -203,14 +206,14 @@ public class GeoTiff implements AutoCloseable {
 
         P lowerLeft = MathUtils.transformRasterPointToModelPoint(
             crs.get(),
-            new Point(0, this.metaData.getHeight()),
+            new Point(0, (int) this.metaData.getHeight()),
             referenceTiepoint,
             pixelScale.get()
         );
 
         P upperRight = MathUtils.transformRasterPointToModelPoint(
             crs.get(),
-            new Point(this.metaData.getWidth(), 0),
+            new Point((int) this.metaData.getWidth(), 0),
             referenceTiepoint,
             pixelScale.get()
         );

@@ -2,6 +2,11 @@ package de.hendrikjanssen.geotifftools.metadata;
 
 import java.util.Objects;
 
+/**
+ * Connects a point in raster space to a point in model space.
+ *
+ * @see <a href="http://geotiff.maptools.org/spec/geotiff2.6.html#2.6.1">Spec reference</a>
+ */
 public class ModelTiepoint {
 
     private final int i;
@@ -22,29 +27,32 @@ public class ModelTiepoint {
         this.z = z;
     }
 
-    public int getI() {
+    // Imitate record-like access to properties
+    // CHECKSTYLE:OFF
+    public int i() {
         return i;
     }
 
-    public int getJ() {
+    public int j() {
         return j;
     }
 
-    public int getK() {
+    public int k() {
         return k;
     }
 
-    public double getX() {
+    public double x() {
         return x;
     }
 
-    public double getY() {
+    public double y() {
         return y;
     }
 
-    public double getZ() {
+    public double z() {
         return z;
     }
+    // CHECKSTYLE:ON
 
     @Override
     public String toString() {

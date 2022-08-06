@@ -1,5 +1,7 @@
 package de.hendrikjanssen.geotifftools.metadata;
 
+import com.twelvemonkeys.imageio.metadata.Entry;
+import com.twelvemonkeys.imageio.plugins.tiff.TIFFImageMetadata;
 import de.hendrikjanssen.geotifftools.MalformedGeoTiffException;
 import de.hendrikjanssen.geotifftools.metadata.geokeys.GeoKey;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -7,8 +9,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import javax.imageio.plugins.tiff.TIFFDirectory;
-import javax.imageio.plugins.tiff.TIFFField;
 
 public class GeoTiffMetadata {
 
@@ -22,29 +22,42 @@ public class GeoTiffMetadata {
     private static final int ModelTiepointsTagId = 33922;
     private static final int ModelPixelScaleTagId = 33550;
 
+    private static final int GdalNoDataTagId = 42113;
+
     private final GeoKey[] geoKeys;
 
     private final ModelTiepoint[] tiepoints;
     private final ModelPixelScale pixelScale;
 
-    private final int width;
-    private final int height;
+    private final Double noDataValue;
 
-    public GeoTiffMetadata(TIFFDirectory tiffDirectory) {
-        this.width = tiffDirectory.getTIFFField(ImageWidthTagId).getAsInt(0);
-        this.height = tiffDirectory.getTIFFField(ImageLengthTagId).getAsInt(0);
+    private final long width;
+    private final long height;
 
-        this.geoKeys = readGeoKeyData(tiffDirectory);
+    public GeoTiffMetadata(TIFFImageMetadata metadata) {
+        this.geoKeys = readGeoKeyData(metadata);
 
-        this.tiepoints = this.readTiepoints(tiffDirectory.getTIFFField(ModelTiepointsTagId));
-        this.pixelScale = this.readPixelScale(tiffDirectory.getTIFFField(ModelPixelScaleTagId));
+        this.width = readDimensionParam(metadata.getTIFFField(ImageWidthTagId));
+        this.height = readDimensionParam(metadata.getTIFFField(ImageLengthTagId));
+
+        this.tiepoints = this.readTiepoints(metadata.getTIFFField(ModelTiepointsTagId));
+        this.pixelScale = this.readPixelScale(metadata.getTIFFField(ModelPixelScaleTagId));
+        this.noDataValue = this.readNoDataValue(metadata.getTIFFField(GdalNoDataTagId));
     }
 
-    public int getWidth() {
+    private long readDimensionParam(Entry widthField) {
+        if (widthField.getValue() instanceof Long) {
+            return (long) widthField.getValue();
+        } else {
+            return (int) widthField.getValue();
+        }
+    }
+
+    public long getWidth() {
         return this.width;
     }
 
-    public int getHeight() {
+    public long getHeight() {
         return this.height;
     }
 
@@ -73,20 +86,20 @@ public class GeoTiffMetadata {
         return Optional.ofNullable(this.pixelScale);
     }
 
-    private GeoKey[] readGeoKeyData(TIFFDirectory tiffDirectory) {
+    private GeoKey[] readGeoKeyData(TIFFImageMetadata metadata) {
 
-        int[] geoKeyDirectoryData = tiffDirectory.getTIFFField(GeoKeyShortTagId).getAsInts();
+        int[] geoKeyDirectoryData = (int[]) metadata.getTIFFField(GeoKeyShortTagId).getValue();
 
         double[] geoDoubleParamsData = new double[1];
-        TIFFField geoKeyDoubleField = tiffDirectory.getTIFFField(GeoKeyDoubleTagId);
+        Entry geoKeyDoubleField = metadata.getTIFFField(GeoKeyDoubleTagId);
         if (geoKeyDoubleField != null) {
-            geoDoubleParamsData = geoKeyDoubleField.getAsDoubles();
+            geoDoubleParamsData = (double[]) geoKeyDoubleField.getValue();
         }
 
         String geoAsciiParamsData = "";
-        TIFFField geoAsciiField = tiffDirectory.getTIFFField(GeoKeyAsciiTagId);
+        Entry geoAsciiField = metadata.getTIFFField(GeoKeyAsciiTagId);
         if (geoAsciiField != null) {
-            geoAsciiParamsData = geoAsciiField.getAsString(0);
+            geoAsciiParamsData = (String) geoAsciiField.getValue();
         }
 
         // Header (4 integers)
@@ -140,13 +153,13 @@ public class GeoTiffMetadata {
         return parsedKeys;
     }
 
-    private ModelTiepoint[] readTiepoints(TIFFField tiepointField) {
+    private ModelTiepoint[] readTiepoints(Entry tiepointField) {
 
         if (tiepointField == null) {
             return null;
         }
 
-        double[] values = tiepointField.getAsDoubles();
+        double[] values = (double[]) tiepointField.getValue();
 
         if (values.length % 6 != 0) {
             throw new MalformedGeoTiffException(String.format(
@@ -173,13 +186,13 @@ public class GeoTiffMetadata {
     }
 
     @Nullable
-    private ModelPixelScale readPixelScale(@Nullable TIFFField pixelScaleField) {
+    private ModelPixelScale readPixelScale(@Nullable Entry pixelScaleField) {
 
         if (pixelScaleField == null) {
             return null;
         }
 
-        double[] values = pixelScaleField.getAsDoubles();
+        double[] values = (double[]) pixelScaleField.getValue();
 
         if (values.length != 3) {
             throw new MalformedGeoTiffException(String.format(
@@ -188,5 +201,35 @@ public class GeoTiffMetadata {
         }
 
         return new ModelPixelScale(values[0], values[1], values[2]);
+    }
+
+    @Nullable
+    private Double readNoDataValue(@Nullable Entry noDataTag) {
+        if (noDataTag == null) {
+            return null;
+        }
+
+        String val = noDataTag.getValueAsString();
+
+        if (val == null) {
+            return null;
+        }
+
+        val = val.strip();
+
+        if (val.length() >= 1) {
+            try {
+                return Double.parseDouble(val);
+            } catch (NumberFormatException exception) {
+                return null;
+            }
+
+        }
+
+        return null;
+    }
+
+    public Optional<Double> getNoDataValue() {
+        return Optional.ofNullable(noDataValue);
     }
 }

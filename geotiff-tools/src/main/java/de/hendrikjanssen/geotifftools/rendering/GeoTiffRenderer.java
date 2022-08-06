@@ -1,6 +1,11 @@
 package de.hendrikjanssen.geotifftools.rendering;
 
 import de.hendrikjanssen.geotifftools.GeoTiff;
+import de.hendrikjanssen.geotifftools.rendering.coloring.ColorTransform;
+import de.hendrikjanssen.geotifftools.rendering.sampling.Sample;
+import de.hendrikjanssen.geotifftools.rendering.sampling.Sampler;
+import de.hendrikjanssen.geotifftools.rendering.transforming.SampleTransform;
+import de.hendrikjanssen.geotifftools.rendering.writing.ImageWriter;
 
 import java.awt.Color;
 import java.awt.Point;
@@ -65,8 +70,8 @@ public class GeoTiffRenderer {
             return renderTarget.getSourceRect();
         } else {
             return new Rectangle(
-                geoTiff.getMetadata().getWidth(),
-                geoTiff.getMetadata().getHeight()
+                (int) geoTiff.getMetadata().getWidth(),
+                (int) geoTiff.getMetadata().getHeight()
             );
         }
     }

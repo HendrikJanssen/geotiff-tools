@@ -21,7 +21,7 @@ class OsgeoSamplesTest extends Specification {
 
     when:
       try (def result = new GeoTiff(osgeoSample as InputStream)) {
-        metadata = result.metadata
+        metadata = result.metadata()
       }
 
     then:
@@ -49,8 +49,8 @@ class OsgeoSamplesTest extends Specification {
       metadata.width == 514
       metadata.height == 515
 
-      metadata.modelTiepoints.get() == [new ModelTiepoint(0, 0, 0, -28493.166784412522d, 4255884.5438021915d, 0.0d)]
-      metadata.modelPixelScale.get() == new ModelPixelScale(60.02213698319374d, 60.02213698319374d, 0)
+      metadata.modelTiepoints() == [new ModelTiepoint(0, 0, 0, -28493.166784412522d, 4255884.5438021915d, 0.0d)]
+      metadata.modelPixelScale() == new ModelPixelScale(60.02213698319374d, 60.02213698319374d, 0)
   }
 
   def 'should parse osgeo sample "GeogToWGS84GeoKey" correctly'() {
@@ -60,7 +60,7 @@ class OsgeoSamplesTest extends Specification {
 
     when:
       try (def result = new GeoTiff(osgeoSample as InputStream)) {
-        metadata = result.metadata
+        metadata = result.metadata()
       }
 
     then:
@@ -79,8 +79,8 @@ class OsgeoSamplesTest extends Specification {
       metadata.width == 101
       metadata.height == 101
 
-      metadata.modelTiepoints.get() == [new ModelTiepoint(50, 50, 0, 9.0010573796d, 52.0013760079d, 0.0d)]
-      metadata.modelPixelScale.get() == new ModelPixelScale(2.77777778E-5d, 2.77777778E-5d, 1.0d)
+      metadata.modelTiepoints() == [new ModelTiepoint(50, 50, 0, 9.0010573796d, 52.0013760079d, 0.0d)]
+      metadata.modelPixelScale() == new ModelPixelScale(2.77777778E-5d, 2.77777778E-5d, 1.0d)
   }
 
   def 'should parse osgeo sample "intergraph - utm" correctly'() {
@@ -90,7 +90,7 @@ class OsgeoSamplesTest extends Specification {
 
     when:
       try (def result = new GeoTiff(osgeoSample as InputStream)) {
-        metadata = result.metadata
+        metadata = result.metadata()
       }
 
     then:
@@ -118,7 +118,7 @@ class OsgeoSamplesTest extends Specification {
       metadata.width == 200
       metadata.height == 200
 
-      metadata.modelTiepoints.get() == [new ModelTiepoint(0, 0, 0, 1871032.953888d, 693358.668144d, 0.0d)]
-      metadata.modelPixelScale.get() == new ModelPixelScale(154.4800313997548d, 154.48003139998764d, 0)
+      metadata.modelTiepoints() == [new ModelTiepoint(0, 0, 0, 1871032.953888d, 693358.668144d, 0.0d)]
+      metadata.modelPixelScale() == new ModelPixelScale(154.4800313997548d, 154.48003139998764d, 0)
   }
 }

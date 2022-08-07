@@ -7,13 +7,12 @@ plugins {
   id "maven-publish"
   id "signing"
 
-  id "checkstyle"
   id "org.checkerframework" version "0.6.3"
 }
 
 group = "de.hendrikjanssen"
 archivesBaseName = "geotiff-tools"
-version = "0.1.0"
+version = "0.2.0"
 
 repositories {
   mavenCentral()
@@ -21,19 +20,22 @@ repositories {
 
 dependencies {
   api("org.geolatte:geolatte-geom:1.8.2")
+
   implementation("com.twelvemonkeys.imageio:imageio-tiff:3.8.2")
 
-  testImplementation(platform("org.junit:junit-bom:5.8.1"))
+  // ------------ Test ------------
+
+  testImplementation(platform("org.junit:junit-bom:5.9.0"))
   testImplementation("org.junit.jupiter:junit-jupiter")
 
   testImplementation("org.spockframework:spock-core:2.1-groovy-3.0")
 
-  testImplementation(platform("org.codehaus.groovy:groovy-bom:3.0.8"))
+  testImplementation(platform("org.codehaus.groovy:groovy-bom:3.0.12"))
 }
 
 java {
   toolchain {
-    languageVersion = JavaLanguageVersion.of(11)
+    languageVersion = JavaLanguageVersion.of(17)
   }
 }
 

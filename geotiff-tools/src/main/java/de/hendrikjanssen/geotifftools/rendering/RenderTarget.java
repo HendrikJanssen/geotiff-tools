@@ -22,8 +22,8 @@ public class RenderTarget {
 
     public static RenderTarget ofOriginalGeoTiffSize(GeoTiff geoTiff) {
         return new RenderTarget(new Dimension(
-            (int) geoTiff.getMetadata().getWidth(),
-            (int) geoTiff.getMetadata().getHeight()
+            (int) geoTiff.metadata().getWidth(),
+            (int) geoTiff.metadata().getHeight()
         ));
     }
 

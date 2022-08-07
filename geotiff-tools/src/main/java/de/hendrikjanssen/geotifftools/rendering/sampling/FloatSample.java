@@ -2,21 +2,25 @@ package de.hendrikjanssen.geotifftools.rendering.sampling;
 
 import de.hendrikjanssen.geotifftools.RasterPoint;
 
-public final class DoubleSample extends Sample {
+public final class FloatSample extends Sample {
 
-    private final double[] values;
+    private final float[] values;
 
-    public DoubleSample(RasterPoint sourcePosition, double[] values) {
+    public FloatSample(RasterPoint sourcePosition, float[] values) {
         super(sourcePosition);
         this.values = values;
     }
 
-    public double[] getValues() {
+    public float[] getValues() {
         return values;
     }
 
     @Override
     public int getBandCount() {
         return values.length;
+    }
+
+    public float getAt(int index) {
+        return values[index];
     }
 }

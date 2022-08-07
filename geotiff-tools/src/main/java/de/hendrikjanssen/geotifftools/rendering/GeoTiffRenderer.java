@@ -1,6 +1,7 @@
 package de.hendrikjanssen.geotifftools.rendering;
 
 import de.hendrikjanssen.geotifftools.GeoTiff;
+import de.hendrikjanssen.geotifftools.RasterPoint;
 import de.hendrikjanssen.geotifftools.rendering.coloring.ColorTransform;
 import de.hendrikjanssen.geotifftools.rendering.sampling.Sample;
 import de.hendrikjanssen.geotifftools.rendering.sampling.Sampler;
@@ -8,7 +9,6 @@ import de.hendrikjanssen.geotifftools.rendering.transforming.SampleTransform;
 import de.hendrikjanssen.geotifftools.rendering.writing.ImageWriter;
 
 import java.awt.Color;
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
@@ -40,10 +40,20 @@ public class GeoTiffRenderer {
             renderTarget.getTargetDimension().height
         );
 
+        for (SampleTransform transform : transforms) {
+            if (transform instanceof StatefulBegin statefulBegin) {
+                statefulBegin.onBegin(geoTiff);
+            }
+        }
+
+        if (colorTransform instanceof StatefulBegin statefulBegin) {
+            statefulBegin.onBegin(geoTiff);
+        }
+
         for (int y = sourceRect.y; y < sourceRect.getMaxY(); y++) {
             for (int x = sourceRect.x; x < sourceRect.getMaxX(); x++) {
 
-                Sample sample = sampler.sample(new Point(x, y), sourceRaster);
+                Sample sample = sampler.sample(new RasterPoint(x, y), sourceRaster);
 
                 if (transforms.size() > 0) {
                     for (SampleTransform sampleTransform : transforms) {
@@ -58,6 +68,13 @@ public class GeoTiffRenderer {
 
                 Color color = colorTransform.transform(geoTiff, sample);
 
+                if (color == null) {
+                    throw new IllegalStateException("ColorTransform '%s' produced null Color for %s".formatted(
+                        colorTransform.toString(),
+                        sample != null ? sample.toString() : "null"
+                    ));
+                }
+
                 targetImage.setRGB(x, y, color.getRGB());
             }
         }
@@ -70,8 +87,8 @@ public class GeoTiffRenderer {
             return renderTarget.getSourceRect();
         } else {
             return new Rectangle(
-                (int) geoTiff.getMetadata().getWidth(),
-                (int) geoTiff.getMetadata().getHeight()
+                (int) geoTiff.metadata().getWidth(),
+                (int) geoTiff.metadata().getHeight()
             );
         }
     }

@@ -2,8 +2,8 @@ package de.hendrikjanssen.geotifftools
 
 import de.hendrikjanssen.geotifftools.metadata.GeoTiffMetadata
 import de.hendrikjanssen.geotifftools.metadata.ModelPixelScale
-import de.hendrikjanssen.geotifftools.metadata.geokeys.GeoKeyId
 import de.hendrikjanssen.geotifftools.metadata.ModelTiepoint
+import de.hendrikjanssen.geotifftools.metadata.geokeys.GeoKeyId
 import de.hendrikjanssen.geotifftools.metadata.geokeys.values.AngularUnit
 import de.hendrikjanssen.geotifftools.metadata.geokeys.values.LinearUnit
 import de.hendrikjanssen.geotifftools.metadata.geokeys.values.ModelType
@@ -20,13 +20,13 @@ class SentinelSamplesTest extends Specification {
     given:
       def sentinelSample = this.class.getResourceAsStream("sentinel-samples/sample.tif")
       GeoTiffMetadata metadata
-      Optional<? extends CoordinateReferenceSystem<? extends Position>> crsOpt
-      Optional<Envelope<C2D>> boundingBox
+      CoordinateReferenceSystem<? extends Position> crs
+      Envelope<C2D> boundingBox
 
     when:
       try (def result = new GeoTiff(sentinelSample as InputStream)) {
-        metadata = result.metadata
-        crsOpt = result.getCoordinateReferenceSystem()
+        metadata = result.metadata()
+        crs = result.getCoordinateReferenceSystem()
         boundingBox = result.getEnvelope()
       }
 
@@ -48,14 +48,13 @@ class SentinelSamplesTest extends Specification {
       metadata.width == 1001
       metadata.height == 1001
 
-      metadata.modelTiepoints.get() == [new ModelTiepoint(0, 0, 0, 590520.0d, 5790630.0d, 0.0d)]
-      metadata.modelPixelScale.get() == new ModelPixelScale(10.0d, 10.0d, 0)
+      metadata.modelTiepoints() == [new ModelTiepoint(0, 0, 0, 590520.0d, 5790630.0d, 0.0d)]
+      metadata.modelPixelScale() == new ModelPixelScale(10.0d, 10.0d, 0)
 
     and: 'should return correct geolatte information'
-      crsOpt.isPresent()
-      crsOpt.get().name == 'WGS 84 / UTM zone 31N'
+      crs != null
+      crs.name == 'WGS 84 / UTM zone 31N'
 
-      boundingBox.isPresent()
-      boundingBox.get() == new Envelope(new C2D(590520.0d, 5780620.0d), new C2D(600530.0d, 5790630.0d), crsOpt.get())
+      boundingBox == new Envelope(new C2D(590520.0d, 5780620.0d), new C2D(600530.0d, 5790630.0d), crs)
   }
 }

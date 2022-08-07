@@ -1,6 +1,7 @@
 package de.hendrikjanssen.geotifftools.rendering.sampling;
 
-import java.awt.Point;
+import de.hendrikjanssen.geotifftools.RasterPoint;
+
 import java.awt.image.Raster;
 
 public class DoubleSampler implements Sampler<DoubleSample> {
@@ -16,12 +17,12 @@ public class DoubleSampler implements Sampler<DoubleSample> {
     }
 
     @Override
-    public DoubleSample sample(Point samplePoint, Raster raster) {
+    public DoubleSample sample(RasterPoint samplePoint, Raster raster) {
 
         double[] sampleValues = new double[bands.length];
 
         for (int k = 0; k < bands.length; k++) {
-            sampleValues[k] = raster.getSampleDouble(samplePoint.x, samplePoint.y, bands[k]);
+            sampleValues[k] = raster.getSampleDouble((int) samplePoint.x(), (int) samplePoint.y(), bands[k]);
         }
 
         return new DoubleSample(samplePoint, sampleValues);

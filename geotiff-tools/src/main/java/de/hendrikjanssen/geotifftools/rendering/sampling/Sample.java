@@ -1,23 +1,26 @@
 package de.hendrikjanssen.geotifftools.rendering.sampling;
 
-import java.awt.Point;
+import de.hendrikjanssen.geotifftools.RasterPoint;
 
 /**
  * Base class for all samples that ensures the Sample contains the raster coordinates it was sampled from.
  */
-public class Sample {
+public sealed abstract class Sample permits IntegerSample, FloatSample, DoubleSample {
 
-    private final Point sourcePosition;
+    private final RasterPoint sourcePosition;
 
-    public Sample(Point sourcePosition) {
+    public Sample(RasterPoint sourcePosition) {
         this.sourcePosition = sourcePosition;
     }
 
     /**
      * Gets the source position in raster space this sample originates from.
+     *
      * @return The source Point.
      */
-    public Point getSourcePosition() {
+    public RasterPoint getSourcePosition() {
         return this.sourcePosition;
     }
+
+    public abstract int getBandCount();
 }

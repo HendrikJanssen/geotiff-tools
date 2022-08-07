@@ -1,7 +1,8 @@
 package de.hendrikjanssen.geotifftools.metadata.geokeys.values;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 import java.util.Arrays;
-import java.util.Optional;
 
 public enum ModelType {
 
@@ -20,9 +21,12 @@ public enum ModelType {
         return this.code;
     }
 
-    public static Optional<ModelType> ofCode(int code) {
+    @Nullable
+    public static ModelType ofCode(int code) {
+
         return Arrays.stream(ModelType.values())
             .filter(modelType -> modelType.code == code)
-            .findFirst();
+            .findFirst()
+            .orElse(null);
     }
 }

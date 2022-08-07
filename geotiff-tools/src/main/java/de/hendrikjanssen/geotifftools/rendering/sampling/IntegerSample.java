@@ -1,14 +1,21 @@
 package de.hendrikjanssen.geotifftools.rendering.sampling;
 
-import java.awt.Point;
+import de.hendrikjanssen.geotifftools.RasterPoint;
 
-public class IntegerSample extends Sample {
+import java.util.Arrays;
+
+public final class IntegerSample extends Sample {
 
     private final int[] values;
 
-    public IntegerSample(Point sourcePosition, int[] values) {
+    public IntegerSample(RasterPoint sourcePosition, int[] values) {
         super(sourcePosition);
         this.values = values;
+    }
+
+    @Override
+    public int getBandCount() {
+        return values.length;
     }
 
     public int[] getValues() {
@@ -21,5 +28,13 @@ public class IntegerSample extends Sample {
 
     public void setAt(int index, int value) {
         this.values[index] = value;
+    }
+
+    @Override
+    public String toString() {
+        return "IntegerSample(sourcePosition=%s, values=%s)".formatted(
+            getSourcePosition().toString(),
+            Arrays.toString(values)
+        );
     }
 }

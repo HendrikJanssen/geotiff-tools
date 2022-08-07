@@ -1,8 +1,10 @@
 package de.hendrikjanssen.geotifftools.rendering.sampling;
 
-import java.awt.Point;
+import de.hendrikjanssen.geotifftools.RasterPoint;
+
 import java.awt.image.Raster;
 
-public interface Sampler<S extends Sample> {
-    S sample(Point samplePoint, Raster raster);
+public interface Sampler<O extends Sample> {
+
+    O sample(RasterPoint samplePoint, Raster raster);
 }

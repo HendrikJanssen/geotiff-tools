@@ -1,11 +1,16 @@
 package de.hendrikjanssen.geotifftools.rendering.transforming;
 
 import de.hendrikjanssen.geotifftools.GeoTiff;
+import de.hendrikjanssen.geotifftools.rendering.StatefulBegin;
 import de.hendrikjanssen.geotifftools.rendering.sampling.DoubleSample;
+import de.hendrikjanssen.geotifftools.rendering.sampling.FloatSample;
 import de.hendrikjanssen.geotifftools.rendering.sampling.IntegerSample;
 import de.hendrikjanssen.geotifftools.rendering.sampling.Sample;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
-public class FilterNoData implements SampleTransform {
+import java.math.BigDecimal;
+
+public class FilterNoData implements SampleTransform, StatefulBegin {
 
     private final double epsilon;
 
@@ -17,36 +22,40 @@ public class FilterNoData implements SampleTransform {
         this(0.00001d);
     }
 
+    @Nullable
+    private BigDecimal noDataValue;
+
     @Override
     public Sample transform(GeoTiff geoTiff, Sample sample) {
-        if (geoTiff.getMetadata().getNoDataValue().isEmpty()) {
+        if (noDataValue == null) {
             return sample;
         }
 
-        double noDataValue = geoTiff.getMetadata().getNoDataValue().get();
-
-        if (sample instanceof DoubleSample) {
-            DoubleSample doubleSample = (DoubleSample) sample;
-
+        if (sample instanceof DoubleSample doubleSample) {
             for (double sampleValue : doubleSample.getValues()) {
-                if (Math.abs(sampleValue - noDataValue) < epsilon) {
+                if (Math.abs(sampleValue - noDataValue.doubleValue()) < epsilon) {
                     return null;
                 }
             }
-
-            return sample;
-        } else if (sample instanceof IntegerSample) {
-            IntegerSample integerSample = (IntegerSample) sample;
-
+        } else if (sample instanceof IntegerSample integerSample) {
             for (int sampleValue : integerSample.getValues()) {
-                if (Math.abs(sampleValue - noDataValue) < epsilon) {
+                if (Math.abs(sampleValue - noDataValue.intValue()) < epsilon) {
                     return null;
                 }
             }
-
-            return sample;
+        } else if (sample instanceof FloatSample floatSample) {
+            for (float sampleValue : floatSample.getValues()) {
+                if (Math.abs(sampleValue - noDataValue.floatValue()) < epsilon) {
+                    return null;
+                }
+            }
         }
 
         return sample;
+    }
+
+    @Override
+    public void onBegin(GeoTiff geoTiff) {
+        this.noDataValue = geoTiff.metadata().getNoDataValue();
     }
 }

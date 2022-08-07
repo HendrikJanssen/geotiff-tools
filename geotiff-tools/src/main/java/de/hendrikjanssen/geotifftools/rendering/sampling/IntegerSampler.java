@@ -1,6 +1,7 @@
 package de.hendrikjanssen.geotifftools.rendering.sampling;
 
-import java.awt.Point;
+import de.hendrikjanssen.geotifftools.RasterPoint;
+
 import java.awt.image.Raster;
 
 /**
@@ -21,6 +22,7 @@ public class IntegerSampler implements Sampler<IntegerSample> {
 
     /**
      * Constructs an IntegerSampler extracting sample values from the given bands.
+     *
      * @param bandIndices The zero-based indices of the bands that should be extracted
      * @return An IntegerSampler extracting sample values from the given bands.
      */
@@ -29,10 +31,9 @@ public class IntegerSampler implements Sampler<IntegerSample> {
     }
 
     @Override
-    public IntegerSample sample(Point samplePoint, Raster raster) {
-
+    public IntegerSample sample(RasterPoint samplePoint, Raster raster) {
         for (int i = 0; i < bandIndices.length; i++) {
-            sampleValueBuffer[i] = raster.getSample(samplePoint.x, samplePoint.y, bandIndices[i]);
+            sampleValueBuffer[i] = raster.getSample((int) samplePoint.x(), (int) samplePoint.y(), bandIndices[i]);
         }
 
         return new IntegerSample(samplePoint, sampleValueBuffer);

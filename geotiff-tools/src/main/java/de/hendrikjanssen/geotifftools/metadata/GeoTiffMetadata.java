@@ -6,9 +6,9 @@ import de.hendrikjanssen.geotifftools.MalformedGeoTiffException;
 import de.hendrikjanssen.geotifftools.metadata.geokeys.GeoKey;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 public class GeoTiffMetadata {
 
@@ -27,9 +27,11 @@ public class GeoTiffMetadata {
     private final GeoKey[] geoKeys;
 
     private final ModelTiepoint[] tiepoints;
+    @Nullable
     private final ModelPixelScale pixelScale;
 
-    private final Double noDataValue;
+    @Nullable
+    private final BigDecimal noDataValue;
 
     private final long width;
     private final long height;
@@ -65,42 +67,43 @@ public class GeoTiffMetadata {
         return Arrays.asList(this.geoKeys.clone());
     }
 
-    public Optional<GeoKey> getGeoKey(int geoKeyId) {
+    @Nullable
+    public GeoKey getGeoKey(int geoKeyId) {
         for (GeoKey geoKey : geoKeys) {
             if (geoKey.getId() == geoKeyId) {
-                return Optional.of(geoKey);
+                return geoKey;
             }
         }
 
-        return Optional.empty();
+        return null;
     }
 
-    public Optional<List<ModelTiepoint>> getModelTiepoints() {
-        return Optional
-            .ofNullable(this.tiepoints)
-            .map(ModelTiepoint[]::clone)
-            .map(Arrays::asList);
+    @Nullable
+    public List<ModelTiepoint> modelTiepoints() {
+        if (this.tiepoints == null) {
+            return null;
+        }
+
+        return Arrays.asList(tiepoints.clone());
     }
 
-    public Optional<ModelPixelScale> getModelPixelScale() {
-        return Optional.ofNullable(this.pixelScale);
+    @Nullable
+    public ModelPixelScale modelPixelScale() {
+        return this.pixelScale;
     }
 
     private GeoKey[] readGeoKeyData(TIFFImageMetadata metadata) {
+        Entry geoKeyDirectoryField = metadata.getTIFFField(GeoKeyShortTagId);
+        if (geoKeyDirectoryField == null) {
+            throw new MalformedGeoTiffException("No GeoKeyShort Tiff field (%d) found".formatted(GeoKeyShortTagId));
+        }
+        int[] geoKeyDirectoryData = (int[]) geoKeyDirectoryField.getValue();
 
-        int[] geoKeyDirectoryData = (int[]) metadata.getTIFFField(GeoKeyShortTagId).getValue();
-
-        double[] geoDoubleParamsData = new double[1];
         Entry geoKeyDoubleField = metadata.getTIFFField(GeoKeyDoubleTagId);
-        if (geoKeyDoubleField != null) {
-            geoDoubleParamsData = (double[]) geoKeyDoubleField.getValue();
-        }
+        double[] geoDoubleParamsData = geoKeyDoubleField != null ? (double[]) geoKeyDoubleField.getValue() : new double[0];
 
-        String geoAsciiParamsData = "";
         Entry geoAsciiField = metadata.getTIFFField(GeoKeyAsciiTagId);
-        if (geoAsciiField != null) {
-            geoAsciiParamsData = (String) geoAsciiField.getValue();
-        }
+        String geoAsciiParamsData = geoAsciiField != null ? (String) geoAsciiField.getValue() : "";
 
         // Header (4 integers)
         int geoKeysNum = geoKeyDirectoryData[3];
@@ -117,30 +120,26 @@ public class GeoTiffMetadata {
             int valueOffset = geoKeyDirectoryData[i + 3];
 
             switch (tiffTagLocation) {
-                case 0:
+                case 0 -> {
                     // This implies the value offset is the actual key value
                     parsedKeys[currentKeyIndex] = new GeoKey(geoKeyId, valueOffset);
-
                     currentKeyIndex++;
-                    break;
-
-                case GeoKeyDoubleTagId:
+                }
+                case GeoKeyDoubleTagId -> {
                     double[] values = Arrays.copyOfRange(geoDoubleParamsData, valueOffset, valueOffset + valueCount);
                     parsedKeys[currentKeyIndex] = new GeoKey(geoKeyId, values);
-
                     currentKeyIndex++;
-                    break;
-
-                case GeoKeyAsciiTagId:
+                }
+                case GeoKeyAsciiTagId -> {
                     String value = geoAsciiParamsData.substring(valueOffset, valueOffset + valueCount - 1);
                     parsedKeys[currentKeyIndex] = new GeoKey(geoKeyId, value);
-
                     currentKeyIndex++;
-                    break;
-                default:
+                }
+                default -> {
                     // Broken GeoKey?
                     i += 4;
                     continue;
+                }
             }
 
             i += 4;
@@ -204,7 +203,7 @@ public class GeoTiffMetadata {
     }
 
     @Nullable
-    private Double readNoDataValue(@Nullable Entry noDataTag) {
+    private BigDecimal readNoDataValue(@Nullable Entry noDataTag) {
         if (noDataTag == null) {
             return null;
         }
@@ -219,7 +218,7 @@ public class GeoTiffMetadata {
 
         if (val.length() >= 1) {
             try {
-                return Double.parseDouble(val);
+                return new BigDecimal(val);
             } catch (NumberFormatException exception) {
                 return null;
             }
@@ -229,7 +228,8 @@ public class GeoTiffMetadata {
         return null;
     }
 
-    public Optional<Double> getNoDataValue() {
-        return Optional.ofNullable(noDataValue);
+    @Nullable
+    public BigDecimal getNoDataValue() {
+        return noDataValue;
     }
 }

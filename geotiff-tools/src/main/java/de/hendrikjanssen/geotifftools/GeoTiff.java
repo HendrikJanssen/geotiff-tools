@@ -8,12 +8,6 @@ import de.hendrikjanssen.geotifftools.metadata.ModelTiepoint;
 import de.hendrikjanssen.geotifftools.metadata.geokeys.GeoKey;
 import de.hendrikjanssen.geotifftools.metadata.geokeys.GeoKeyId;
 import de.hendrikjanssen.geotifftools.metadata.geokeys.values.ModelType;
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.geolatte.geom.Envelope;
-import org.geolatte.geom.Position;
-import org.geolatte.geom.crs.CoordinateReferenceSystem;
-import org.geolatte.geom.crs.CrsRegistry;
-
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
@@ -23,6 +17,11 @@ import java.util.List;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.geolatte.geom.Envelope;
+import org.geolatte.geom.Position;
+import org.geolatte.geom.crs.CoordinateReferenceSystem;
+import org.geolatte.geom.crs.CrsRegistry;
 
 /**
  * The main class that all geotiff operations are based on.
@@ -107,7 +106,7 @@ public class GeoTiff implements AutoCloseable {
      * @param rasterX The X-coordinate (horizontal axis) of a point in raster space
      * @param rasterY The Y-coordinate (vertical axis) of a point in raster space
      * @param <P>     The type of the point resulting from the transformation, usually a G2D
-     * @return An Optional containing the transformed point.
+     * @return The transformed point or null if any information is missing to transform the given raster point.
      */
     @SuppressWarnings("unchecked")
     @Nullable
@@ -176,11 +175,10 @@ public class GeoTiff implements AutoCloseable {
 
     /**
      * Calculates the envelope of the geotiff by transforming the lower left and upper right corners of the geotiff into model space.
-     * If any parameter needed for the transformation is not specified in the geotiff, the function will return an empty Optional.
+     * If any parameter needed for the transformation is not specified in the geotiff, the function will return null.
      *
      * @param <P> The type of Positions of the model space, usually a G2D
-     * @return An Optional containing the calculated bounding box, or an empty Optional
-     * if any information needed for envelope calculation is missing.
+     * @return The calculated bounding box, or null if any information needed for envelope calculation is missing.
      */
     @SuppressWarnings("unchecked")
     @Nullable
@@ -223,6 +221,17 @@ public class GeoTiff implements AutoCloseable {
         return new Envelope<>(lowerLeft, upperRight, crs);
     }
 
+
+    /**
+     * Reads the CRS (coordinate reference system) as specified in the GeoTiff metadata.
+     * Only known EPSG codes are recognized (this is a limitation of Geolatte) and only projected
+     * or geographic CRS are supported. If any information for determining the CRS is missing or the EPSG code is unknown,
+     * returns null.
+     *
+     * @return The CRS or null if any information is missing from the GeoTiff to specify the CRS.
+     * @see <a href="http://geotiff.maptools.org/spec/geotiff6.html#6.3.2.1">Recognized Geographic EPSG codes</a>
+     * @see <a href="http://geotiff.maptools.org/spec/geotiff6.html#6.3.3.1">Recognized Projected EPSG codes</a>
+     */
     @Nullable
     public CoordinateReferenceSystem<? extends Position> getCoordinateReferenceSystem() {
         ModelType modelType = this.modelType();
@@ -247,7 +256,6 @@ public class GeoTiff implements AutoCloseable {
         }
 
         int crsId = projectedCsTypeKey.getValueAsInt();
-
         if (crsId < minId || crsId > maxId) {
             return null;
         }

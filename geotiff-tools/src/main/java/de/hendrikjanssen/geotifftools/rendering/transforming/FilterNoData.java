@@ -6,9 +6,8 @@ import de.hendrikjanssen.geotifftools.rendering.sampling.DoubleSample;
 import de.hendrikjanssen.geotifftools.rendering.sampling.FloatSample;
 import de.hendrikjanssen.geotifftools.rendering.sampling.IntegerSample;
 import de.hendrikjanssen.geotifftools.rendering.sampling.Sample;
-import org.checkerframework.checker.nullness.qual.Nullable;
-
 import java.math.BigDecimal;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class FilterNoData implements SampleTransform, StatefulBegin {
 
@@ -26,7 +25,8 @@ public class FilterNoData implements SampleTransform, StatefulBegin {
     private BigDecimal noDataValue;
 
     @Override
-    public Sample transform(GeoTiff geoTiff, Sample sample) {
+    @Nullable
+    public Sample transform(GeoTiff geoTiff, @Nullable Sample sample) {
         if (noDataValue == null) {
             return sample;
         }
